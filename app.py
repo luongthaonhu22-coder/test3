@@ -44,8 +44,21 @@ st.set_page_config(page_title="ELOGS Quản Trị", page_icon="🚢", layout="wi
 # --- NHÚNG MÃ CSS NÂNG CẤP (PHONG CÁCH SaaS HIỆN ĐẠI) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #f5f7f9; }
-    div.stButton > button { border-radius: 8px; border: 1px solid #ddd; }
+    .stApp { background-color: #EBF0F5 !important;
+    }
+   div.stButton > button {
+        background-color: #185ADB !important;
+        color: white !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    div.stButton > button:hover {
+        background-color: #0A2647 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
     .stDataFrame { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
     
@@ -81,7 +94,7 @@ st.markdown("""
     
     h1, h2, h3 {
         color: #0F2C59 !important;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Segoe UI', sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
