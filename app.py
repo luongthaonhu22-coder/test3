@@ -62,19 +62,6 @@ st.markdown("""
 
     
 
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 10px 10px 0 0;
-        background-color: #f1f3f6;
-        padding: 10px 20px;
-    }
-    
-    input, textarea, div[data-testid="stDataFrame"] {
-        border-radius: 12px !important;
-        border: 1px solid #d1d9e6 !important;
-    }
     
     div.stButton > button {
         background-color: #2563eb !important; 
