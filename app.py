@@ -59,8 +59,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-    .stDataFrame { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
     
     html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif !important;
