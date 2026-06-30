@@ -6,7 +6,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import pandas as pd
 from datetime import date
-
+import matplotlib.pyplot as plt
 # --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC) ---
 import requests # Thư viện dùng để gọi API
 
