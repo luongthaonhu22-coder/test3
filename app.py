@@ -209,4 +209,61 @@ with tab_mail:
         else:
             with st.spinner('Hệ thống đang tự động gửi email và tệp tin...'):
                 try:
+                    # 1. TỰ ĐỘNG TẠO FILE BOOKING NOTE HTML ĐỂ ĐÍNH KÈM
+                    file_name = f"Booking_Note_{booking_no}.html"
+                    file_content = f"""
+                    <html><body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                        <h2 style="text-align: center; color: #185ADB;">CÔNG TY TNHH LOGISTICS ELOGS</h2><hr>
+                        <h3>THÔNG TIN ĐẶT CHỖ (BOOKING NOTE)</h3>
+                        <p>Kính gửi Quý khách hàng/Bộ phận liên quan,</p>
+                        <ul>
+                            <li><b>Số Booking:</b> {booking_no}</li>
+                            <li><b>Tên tàu / Chuyến:</b> EVER GIVEN / 042W</li>
+                            <li><b>Số Container:</b> {container_no}</li>
+                            <li><b>Thời gian Cut-off VGM/SI:</b> <span style="color: red; font-weight: bold;">{cut_off}</span></li>
+                        </ul>
+                    </body></html>
+                    """
+                    with open(file_name, "w", encoding="utf-8") as f:
+                        f.write(file_content)
+
+                    # 2. ĐÓNG GÓI PHONG BÌ EMAIL
+                    msg = MIMEMultipart()
+                    msg['From'] = SENDER_EMAIL
+                    msg['To'] = receiver_email
+                    if cc_email: 
+                        msg['Cc'] = cc_email
+                    msg['Subject'] = f"[URGENT] Nhắc nhở Cut-off VGM/SI - Booking: {booking_no}"
+                    
+                    html_body = f"<html><body><h2>THÔNG BÁO ĐÃ CÓ LỊCH CUT-OFF</h2><p>Chi tiết lô hàng vui lòng xem tệp đính kèm phía dưới.</p></body></html>"
+                    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+                    # 3. ĐÍNH KÈM FILE HTML BẮT BUỘC
+                    with open(file_name, "rb") as attachment:
+                        part = MIMEBase("application", "octet-stream")
+                        part.set_payload(attachment.read())
+                    encoders.encode_base64(part)
+                    part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
+                    msg.attach(part)
+
+                    # 4. ĐÍNH KÈM FILE TÙY CHỌN (NẾU CÓ TẢI LÊN)
+                    if uploaded_file is not None:
+                        file_data = uploaded_file.read()
+                        file_part = MIMEBase("application", "octet-stream")
+                        file_part.set_payload(file_data)
+                        encoders.encode_base64(file_part)
+                        file_part.add_header("Content-Disposition", f"attachment; filename={uploaded_file.name}")
+                        msg.attach(file_part)
+
+                    # 5. TIẾN HÀNH GỬI
+                    server = smtplib.SMTP('smtp.gmail.com', 587)
+                    server.starttls()
+                    server.login(SENDER_EMAIL, APP_PASSWORD)
+                    server.send_message(msg)
+                    server.quit()
+                    
+                    st.success("🎉 TUYỆT VỜI! Email thông báo cùng file đính kèm đã gửi thành công!")
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"❌ Lỗi gửi mail: {e}. Vui lòng kiểm tra tài khoản cấu hình.")
                     # 1. TỰ ĐỘ
