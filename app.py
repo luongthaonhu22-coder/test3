@@ -44,9 +44,19 @@ st.set_page_config(page_title="ELOGS Quản Trị", page_icon="🚢", layout="wi
 # --- NHÚNG MÃ CSS NÂNG CẤP (PHONG CÁCH SaaS HIỆN ĐẠI) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #EBF0F5 !important;
+    /* Nền màu xám ghi nhạt dịu mắt, giảm mỏi mắt khi làm việc lâu */
+    .stApp {
+        background-color: #EBF0F5 !important;
     }
-   div.stButton > button {
+    
+    /* Làm nổi bật các Tiêu đề bằng màu xanh Navy đậm */
+    h1, h2, h3 {
+        color: #0F2C59 !important;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    
+    /* Định dạng nút bấm chính */
+    div.stButton > button {
         background-color: #185ADB !important;
         color: white !important;
         border-radius: 8px !important;
@@ -55,19 +65,6 @@ st.markdown("""
     }
     div.stButton > button:hover {
         background-color: #0A2647 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
-    
-
-    
-   
-    
-    h1, h2, h3 {
-        color: #0F2C59 !important;
-        font-family: 'Segoe UI', sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
