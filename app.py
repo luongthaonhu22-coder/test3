@@ -8,6 +8,31 @@ import pandas as pd
 from datetime import date, datetime # <--- Đã bổ sung datetime
 import matplotlib.pyplot as plt
 import requests 
+import streamlit as st
+
+def goi_api_lay_du_lieu(booking_id):
+    """
+    Hàm gọi API để lấy thông tin chi tiết lô hàng từ hệ thống bên ngoài.
+    """
+    # Thay đường dẫn API thực tế của bạn vào đây
+    api_url = f"https://api.your-logistics-system.com/shipment/{booking_id}"
+    headers = {"Authorization": "Bearer YOUR_API_TOKEN"} # Nếu API cần xác thực
+
+    try:
+        # Gửi request GET tới server
+        response = requests.get(api_url, headers=headers, timeout=10)
+        
+        # Kiểm tra phản hồi
+        if response.status_code == 200:
+            data = response.json() # Chuyển dữ liệu trả về thành định dạng JSON
+            return data
+        else:
+            st.error(f"Lỗi API: {response.status_code}")
+            return None
+            
+    except requests.exceptions.RequestException as e:
+        st.error(f"Không thể kết nối tới server: {e}")
+        return None
 
 # --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC) ---
 def auto_assign_task(task_name, priority_level):
