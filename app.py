@@ -93,7 +93,8 @@ if 'tasks_df' not in st.session_state:
         "📌 Tên công việc": ["Khai E-port lô BKG-123", "Gửi SI hãng tàu Evergreen"],
         "🏷️ Nhãn": ["Hàng Nhập", "Chứng Từ"],
         "⏳ Trạng thái": ["Đang làm", "Chưa làm"],
-        "📅 Deadline": [date.today().strftime("%Y-%m-%d"), date.today().strftime("%Y-%m-%d")], 
+        # Sửa từ chuỗi thành kiểu date chuẩn của Python:
+        "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
         "💬 Trao đổi / Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
 
