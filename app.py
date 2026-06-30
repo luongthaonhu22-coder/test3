@@ -120,8 +120,8 @@ if 'tasks_df' not in st.session_state:
         "📌 Tên công việc": ["Khai E-port lô BKG-123", "Gửi SI hãng tàu Evergreen"],
         "🏷️ Nhãn": ["Hàng Nhập", "Chứng Từ"],
         "⏳ Trạng thái": ["Đang làm", "Chưa làm"],
-        "📅 Deadline": [date(2026, 6, 25), date(2026, 6, 30)], # Đặt 1 ngày quá hạn để test cảnh báo
-        "💬 Trao đổi / Ghi chú": ["Sếp dặn check kỹ số cont", ""]
+        "📅 Deadline": [date.today(), date.today()], 
+        "💬 Trao đổi / Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
 
 st.title("🚢 HỆ THỐNG QUẢN LÝ LOGISTICS - ELOGS")
