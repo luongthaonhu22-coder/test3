@@ -5,49 +5,36 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import pandas as pd
-from datetime import date
+from datetime import date, datetime # <--- Đã bổ sung datetime
 import matplotlib.pyplot as plt
-# --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC) ---
-import requests # Thư viện dùng để gọi API
+import requests 
 
+# --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC) ---
 def auto_assign_task(task_name, priority_level):
     """
     Hàm gọi API thực tế lên máy chủ AWS.
     """
-    # 1. Đường link API (Endpoint) do AWS cung cấp cho bạn
-    # (Bạn sẽ lấy link này từ AWS API Gateway)
     aws_api_url = "https://ab12cd34ef.execute-api.ap-southeast-1.amazonaws.com/prod/tao-cong-viec"
-    
-    # 2. Gói dữ liệu bạn muốn gửi cho AWS
     payload = {
         "task_name": task_name,
         "priority": priority_level
     }
-    
     try:
-        # 3. Gửi yêu cầu (POST request) lên AWS
         response = requests.post(aws_api_url, json=payload)
-        
-        # 4. Kiểm tra xem AWS có trả lời thành công không (Mã 200 là Thành công)
         if response.status_code == 200:
-            # AWS xử lý xong và trả về dữ liệu của task mới
-            # Ví dụ: AWS sẽ trả về: {"🚩 Quan trọng": True, "📌 Tên công việc": "...", ...}
             new_task_from_aws = response.json()
-            
-            # Cập nhật dữ liệu từ AWS vào bảng của Streamlit
             st.session_state.tasks_df = pd.concat(
                 [st.session_state.tasks_df, pd.DataFrame([new_task_from_aws])], 
                 ignore_index=True
             )
             return True
         else:
-            # Nếu AWS báo lỗi (ví dụ: máy chủ sập, sai định dạng)
             st.error(f"Lỗi từ máy chủ AWS: {response.text}")
             return False
-            
     except Exception as e:
         st.error(f"Không thể kết nối mạng tới AWS. Chi tiết lỗi: {e}")
         return False
+
 # --- CẤU HÌNH ---
 SENDER_EMAIL = "luongthaonhu22@gmail.com" 
 APP_PASSWORD = "yjny odng vbgd czck"     
@@ -57,21 +44,15 @@ st.set_page_config(page_title="ELOGS Quản Trị", page_icon="🚢", layout="wi
 # --- NHÚNG MÃ CSS NÂNG CẤP (PHONG CÁCH SaaS HIỆN ĐẠI) ---
 st.markdown("""
 <style>
-    /* Bo tròn các khung thông tin */
     .stApp { background-color: #f5f7f9; }
     div.stButton > button { border-radius: 8px; border: 1px solid #ddd; }
-    
-    /* Làm nổi bật vùng Dashboard */
     .stDataFrame { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    
-    /* 1. Đổi Font chữ sang loại hiện đại (Inter, Roboto hoặc Sans-serif) */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
     
     html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif !important;
     }
     
-    /* 2. Làm thẻ Tab bo tròn và gọn gàng */
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
     }
@@ -81,40 +62,26 @@ st.markdown("""
         padding: 10px 20px;
     }
     
-    /* 3. Bo tròn góc các ô nhập liệu và bảng biểu */
     input, textarea, div[data-testid="stDataFrame"] {
         border-radius: 12px !important;
         border: 1px solid #d1d9e6 !important;
     }
     
-    /* 4. Nút bấm phẳng, bo tròn, màu xanh chuẩn SaaS */
     div.stButton > button {
-        background-color: #2563eb !important; /* Xanh dương đậm chuẩn SaaS */
+        background-color: #2563eb !important; 
         color: white !important;
         border-radius: 10px !important;
         padding: 10px 24px !important;
         font-weight: 600 !important;
         border: none !important;
     }
-    
-    /* 5. Giao diện nền trắng sáng sạch sẽ */
-   .stApp {
-        background-color: #EBF0F5 !important;
-    }
-    h1, h2, h3 {
-        color: #0F2C59 !important;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    
-     div.stButton > button {
-        background-color: #185ADB !important;
-        color: white !important;
-        border-radius: 8px !important;
-        font-weight: bold !important;
-        border: none !important;
-    }
     div.stButton > button:hover {
         background-color: #0A2647 !important;
+    }
+    
+    h1, h2, h3 {
+        color: #0F2C59 !important;
+        font-family: 'Inter', sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -126,15 +93,13 @@ if 'tasks_df' not in st.session_state:
         "📌 Tên công việc": ["Khai E-port lô BKG-123", "Gửi SI hãng tàu Evergreen"],
         "🏷️ Nhãn": ["Hàng Nhập", "Chứng Từ"],
         "⏳ Trạng thái": ["Đang làm", "Chưa làm"],
-        "📅 Deadline": [date.today(), date.today()], 
+        "📅 Deadline": [date.today().strftime("%Y-%m-%d"), date.today().strftime("%Y-%m-%d")], 
         "💬 Trao đổi / Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
 
 st.title("🚢 HỆ THỐNG QUẢN LÝ LOGISTICS - ELOGS")
 
-# SẮP XẾP LẠI TABS: Dashboard (Quản trị) lên trước, Gửi Email ra sau
 tab_dashboard, tab_mail = st.tabs(["📊 QUẢN TRỊ CÔNG VIỆC (DASHBOARD)", "📧 PRE-ALERT & CHỨNG TỪ"])
-
 
 # ==========================================
 # TAB 1: DASHBOARD QUẢN TRỊ CÔNG VIỆC
@@ -142,11 +107,10 @@ tab_dashboard, tab_mail = st.tabs(["📊 QUẢN TRỊ CÔNG VIỆC (DASHBOARD)",
 with tab_dashboard:
     st.subheader("Bảng Kế hoạch & Theo dõi tiến độ")
     
-    # --- THÊM PHẦN TỰ ĐỘNG HÓA ---
     if st.button("🤖 Kích hoạt tạo Task tự động (Mô phỏng hệ thống)"):
         auto_assign_task("Kiểm tra hàng tồn kho mới nhập", "High")
         st.success("Hệ thống đã tự động thêm task mới!")
-        st.rerun() # Refresh lại trang để cập nhật bảng
+        st.rerun()
     
     # 1. BÁO CÁO NHANH (METRICS)
     df = st.session_state.tasks_df
@@ -162,26 +126,10 @@ with tab_dashboard:
         m4.metric("Hiệu suất", f"{int((done_tasks/total_tasks)*100)}%")
     else:
         m4.metric("Hiệu suất", "0%")
-    edited_df = st.data_editor(
-        st.session_state.tasks_df,
-        key="task_table_editor", 
-        use_container_width=True,
-        num_rows="dynamic",
-        column_config={
-            "🚩 Quan trọng": st.column_config.CheckboxColumn("Quan trọng", default=False),
-            "🏷️ Nhãn": st.column_config.SelectboxColumn("Nhãn", options=["Hàng Nhập", "Hàng Xuất", "Chứng Từ", "Hiện Trường", "Hải Quan"]),
-            "⏳ Trạng thái": st.column_config.SelectboxColumn("Trạng thái", options=["Chưa làm", "Đang làm", "Hoàn thành"]),
-        }
-    )
-    st.session_state.tasks_df = edited_df
-
-    st.markdown("### 🔔 Nhắc nhở hệ thống")
-    for index, row in edited_df.iterrows():
-        if row["🚩 Quan trọng"] == True and row["⏳ Trạng thái"] != "Hoàn thành":
-            st.warning(f"⚠️ Nhiệm vụ quan trọng chưa xong: **{row['📌 Tên công việc']}** (Hạn: {row['📅 Deadline']})")    
+    
     st.markdown("---")
 
-    # 2. BẢNG TƯƠNG TÁC DỮ LIỆU (DATA EDITOR)
+    # 2. BẢNG TƯƠNG TÁC DỮ LIỆU (DATA EDITOR) - Đã xóa phần trùng lặp
     edited_df = st.data_editor(
         st.session_state.tasks_df,
         key="task_table_editor",
@@ -201,7 +149,8 @@ with tab_dashboard:
     today = date.today()
     for index, row in edited_df.iterrows():
         deadline = row["📅 Deadline"]
-        if isinstance(deadline, str): deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
+        if isinstance(deadline, str): 
+            deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
         
         if row["⏳ Trạng thái"] != "Hoàn thành" and deadline < today:
             st.error(f"❌ QUÁ HẠN: **{row['📌 Tên công việc']}** (Deadline: {deadline})")
@@ -225,7 +174,6 @@ with tab_dashboard:
         st.write("Số lượng đầu việc theo nhãn:")
         label_counts = edited_df["🏷️ Nhãn"].value_counts()
         st.bar_chart(label_counts)
-
 
 # ==========================================
 # TAB 2: GỬI MAIL PRE-ALERT KÈM CHỨNG TỪ
@@ -251,7 +199,7 @@ with tab_mail:
     container_no = col2.text_input("Số Container:", "CMAU1234567")
     cut_off = col3.text_input("Cut-off:", "17:00 - 25/06/2026")
     
-    # Nút Upload File đính kèm
+    # Nút Upload File đính kèm (Đã đồng bộ tên biến)
     uploaded_file = st.file_uploader("Tải ảnh chứng từ lên (JPG, PNG, PDF):", type=['jpg', 'jpeg', 'png', 'pdf'])
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -261,60 +209,4 @@ with tab_mail:
         else:
             with st.spinner('Hệ thống đang tự động gửi email và tệp tin...'):
                 try:
-                    # 1. TỰ ĐỘNG TẠO FILE BOOKING NOTE HTML ĐỂ ĐÍNH KÈM
-                    file_name = f"Booking_Note_{booking_no}.html"
-                    file_content = f"""
-                    <html><body style="font-family: Arial, sans-serif; line-height: 1.6;">
-                        <h2 style="text-align: center; color: #185ADB;">CÔNG TY TNHH LOGISTICS ELOGS</h2><hr>
-                        <h3>THÔNG TIN ĐẶT CHỖ (BOOKING NOTE)</h3>
-                        <p>Kính gửi Quý khách hàng/Bộ phận liên quan,</p>
-                        <ul>
-                            <li><b>Số Booking:</b> {booking_no}</li>
-                            <li><b>Tên tàu / Chuyến:</b> {vessel}</li>
-                            <li><b>Số Container:</b> {container_no}</li>
-                            <li><b>Thời gian Cut-off VGM/SI:</b> <span style="color: red; font-weight: bold;">{cut_off}</span></li>
-                        </ul>
-                    </body></html>
-                    """
-                    with open(file_name, "w", encoding="utf-8") as f:
-                        f.write(file_content)
-
-                    # 2. ĐÓNG GÓI PHONG BÌ EMAIL
-                    msg = MIMEMultipart()
-                    msg['From'] = SENDER_EMAIL
-                    msg['To'] = receiver_email
-                    if cc_email: 
-                        msg['Cc'] = cc_email
-                    msg['Subject'] = f"[URGENT] Nhắc nhở Cut-off VGM/SI - Booking: {booking_no}"
-                    
-                    html_body = f"<html><body><h2>THÔNG BÁO ĐÃ CÓ LỊCH CUT-OFF</h2><p>Chi tiết lô hàng vui lòng xem tệp đính kèm phía dưới.</p></body></html>"
-                    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-                    # 3. ĐÍNH KÈM FILE HTML BẮT BUỘC (Booking Note ban đầu)
-                    with open(file_name, "rb") as attachment:
-                        part = MIMEBase("application", "octet-stream")
-                        part.set_payload(attachment.read())
-                    encoders.encode_base64(part)
-                    part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
-                    msg.attach(part)
-
-                    # 4. ĐÍNH KÈM HÌNH ẢNH NẾU NGƯỜI DÙNG CÓ TẢI LÊN (TÙY CHỌN)
-                    if uploaded_image is not None:
-                        image_data = uploaded_image.read()
-                        image_part = MIMEBase("image", uploaded_image.type.split("/")[-1])
-                        image_part.set_payload(image_data)
-                        encoders.encode_base64(image_part)
-                        image_part.add_header("Content-Disposition", f"attachment; filename={uploaded_image.name}")
-                        msg.attach(image_part)
-                        # 5. TIẾN HÀNH GỬI
-                    server = smtplib.SMTP('smtp.gmail.com', 587)
-                    server.starttls()
-                    server.login(SENDER_EMAIL, APP_PASSWORD)
-                    server.send_message(msg)
-                    server.quit()
-                    
-                    st.success("🎉 TUYỆT VỜI! Email thông báo cùng file đính kèm đã gửi thành công!")
-                    st.balloons()
-                except Exception as e:
-                    st.error(f"❌ Lỗi gửi mail: {e}. Vui lòng kiểm tra tài khoản cấu hình.")
-                        
+                    # 1. TỰ ĐỘ
