@@ -61,10 +61,7 @@ st.markdown("""
 
 
     
-    html, body, [class*="st-"] {
-        font-family: 'Inter', sans-serif !important;
-    }
-    
+
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
     }
