@@ -98,17 +98,23 @@ st.markdown("""
     }
     
     /* 5. Giao diện nền trắng sáng sạch sẽ */
-    .stApp {
-        background-color: #ffffff !important;
+   .stApp {
+        background-color: #EBF0F5 !important;
+    }
+    h1, h2, h3 {
+        color: #0F2C59 !important;
+        font-family: 'Segoe UI', sans-serif;
     }
     
-    /* 6. Tạo đổ bóng nhẹ cho các khối nội dung (Cards) */
-    .stColumn {
-        background-color: #ffffff;
-        border: 1px solid #f0f0f0;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+     div.stButton > button {
+        background-color: #185ADB !important;
+        color: white !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    div.stButton > button:hover {
+        background-color: #0A2647 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -156,12 +162,29 @@ with tab_dashboard:
         m4.metric("Hiệu suất", f"{int((done_tasks/total_tasks)*100)}%")
     else:
         m4.metric("Hiệu suất", "0%")
-        
+    edited_df = st.data_editor(
+        st.session_state.tasks_df,
+        key="task_table_editor", 
+        use_container_width=True,
+        num_rows="dynamic",
+        column_config={
+            "🚩 Quan trọng": st.column_config.CheckboxColumn("Quan trọng", default=False),
+            "🏷️ Nhãn": st.column_config.SelectboxColumn("Nhãn", options=["Hàng Nhập", "Hàng Xuất", "Chứng Từ", "Hiện Trường", "Hải Quan"]),
+            "⏳ Trạng thái": st.column_config.SelectboxColumn("Trạng thái", options=["Chưa làm", "Đang làm", "Hoàn thành"]),
+        }
+    )
+    st.session_state.tasks_df = edited_df
+
+    st.markdown("### 🔔 Nhắc nhở hệ thống")
+    for index, row in edited_df.iterrows():
+        if row["🚩 Quan trọng"] == True and row["⏳ Trạng thái"] != "Hoàn thành":
+            st.warning(f"⚠️ Nhiệm vụ quan trọng chưa xong: **{row['📌 Tên công việc']}** (Hạn: {row['📅 Deadline']})")    
     st.markdown("---")
 
     # 2. BẢNG TƯƠNG TÁC DỮ LIỆU (DATA EDITOR)
     edited_df = st.data_editor(
         st.session_state.tasks_df,
+        key="task_table_editor",
         use_container_width=True,
         num_rows="dynamic",
         column_config={
@@ -230,35 +253,68 @@ with tab_mail:
     
     # Nút Upload File đính kèm
     uploaded_file = st.file_uploader("Tải ảnh chứng từ lên (JPG, PNG, PDF):", type=['jpg', 'jpeg', 'png', 'pdf'])
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    if st.button("🚀 XÁC NHẬN GỬI THÔNG BÁO KÈM CHỨNG TỪ"):
+    if st.button("🚀 XÁC NHẬN GỬI THÔNG BÁO MÀ KHÔNG BẮT BUỘC ẢNH"):
         if not receiver_email:
-            st.error("Vui lòng điền Email người nhận!")
-        elif not uploaded_file:
-            st.error("Vui lòng chọn tệp chứng từ đính kèm!")
+            st.error("⚠️ Vui lòng điền Email người nhận (To)!")
         else:
-            with st.spinner('Đang đóng gói và gửi mail...'):
+            with st.spinner('Hệ thống đang tự động gửi email và tệp tin...'):
                 try:
+                    # 1. TỰ ĐỘNG TẠO FILE BOOKING NOTE HTML ĐỂ ĐÍNH KÈM
+                    file_name = f"Booking_Note_{booking_no}.html"
+                    file_content = f"""
+                    <html><body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                        <h2 style="text-align: center; color: #185ADB;">CÔNG TY TNHH LOGISTICS ELOGS</h2><hr>
+                        <h3>THÔNG TIN ĐẶT CHỖ (BOOKING NOTE)</h3>
+                        <p>Kính gửi Quý khách hàng/Bộ phận liên quan,</p>
+                        <ul>
+                            <li><b>Số Booking:</b> {booking_no}</li>
+                            <li><b>Tên tàu / Chuyến:</b> {vessel}</li>
+                            <li><b>Số Container:</b> {container_no}</li>
+                            <li><b>Thời gian Cut-off VGM/SI:</b> <span style="color: red; font-weight: bold;">{cut_off}</span></li>
+                        </ul>
+                    </body></html>
+                    """
+                    with open(file_name, "w", encoding="utf-8") as f:
+                        f.write(file_content)
+
+                    # 2. ĐÓNG GÓI PHONG BÌ EMAIL
                     msg = MIMEMultipart()
                     msg['From'] = SENDER_EMAIL
                     msg['To'] = receiver_email
-                    if cc_email: msg['Cc'] = cc_email
-                    msg['Subject'] = f"[URGENT] Pre-alert Booking: {booking_no}"
-                    msg.attach(MIMEText(f"Kính gửi bộ phận liên quan,<br>Vui lòng xem file đính kèm để hoàn tất thủ tục trước Cut-off: {cut_off}.", 'html'))
+                    if cc_email: 
+                        msg['Cc'] = cc_email
+                    msg['Subject'] = f"[URGENT] Nhắc nhở Cut-off VGM/SI - Booking: {booking_no}"
                     
-                    # Đính kèm file
-                    part = MIMEBase("application", "octet-stream")
-                    part.set_payload(uploaded_file.read())
+                    html_body = f"<html><body><h2>THÔNG BÁO ĐÃ CÓ LỊCH CUT-OFF</h2><p>Chi tiết lô hàng vui lòng xem tệp đính kèm phía dưới.</p></body></html>"
+                    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+                    # 3. ĐÍNH KÈM FILE HTML BẮT BUỘC (Booking Note ban đầu)
+                    with open(file_name, "rb") as attachment:
+                        part = MIMEBase("application", "octet-stream")
+                        part.set_payload(attachment.read())
                     encoders.encode_base64(part)
-                    part.add_header("Content-Disposition", f"attachment; filename={uploaded_file.name}")
+                    part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
                     msg.attach(part)
-                    
+
+                    # 4. ĐÍNH KÈM HÌNH ẢNH NẾU NGƯỜI DÙNG CÓ TẢI LÊN (TÙY CHỌN)
+                    if uploaded_image is not None:
+                        image_data = uploaded_image.read()
+                        image_part = MIMEBase("image", uploaded_image.type.split("/")[-1])
+                        image_part.set_payload(image_data)
+                        encoders.encode_base64(image_part)
+                        image_part.add_header("Content-Disposition", f"attachment; filename={uploaded_image.name}")
+                        msg.attach(image_part)
+                        # 5. TIẾN HÀNH GỬI
                     server = smtplib.SMTP('smtp.gmail.com', 587)
                     server.starttls()
                     server.login(SENDER_EMAIL, APP_PASSWORD)
                     server.send_message(msg)
                     server.quit()
-                    st.success("🎉 TUYỆT VỜI! Đã gửi email kèm ảnh chứng từ thành công!")
+                    
+                    st.success("🎉 TUYỆT VỜI! Email thông báo cùng file đính kèm đã gửi thành công!")
                     st.balloons()
                 except Exception as e:
-                    st.error(f"Lỗi: {e}")
+                    st.error(f"❌ Lỗi gửi mail: {e}. Vui lòng kiểm tra tài khoản cấu hình.")
+                        
