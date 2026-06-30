@@ -266,4 +266,3 @@ with tab_mail:
                     st.balloons()
                 except Exception as e:
                     st.error(f"❌ Lỗi gửi mail: {e}. Vui lòng kiểm tra tài khoản cấu hình.")
-                    # 1. TỰ ĐỘ
