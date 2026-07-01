@@ -217,4 +217,51 @@ elif menu == "📡 Tra cứu & Gửi Email":
         col_a, col_b, col_c = st.columns(3)
         booking_no = col_a.text_input("Mã số Booking:", "BKG-VNM-998877")
         container_no = col_b.text_input("Ký hiệu Container:", "CMAU1234567")
-        cut_off = col_c.
+        cut_off = col_c.text_input("Thời gian Cut-off:", "17:00 - 25/06/2026")
+        
+        uploaded_file = st.file_uploader("Đính kèm tệp chứng từ (Hình ảnh, PDF):")
+        
+        if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
+            if not receiver_email:
+                st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
+            else:
+                with st.spinner('Đang đóng gói chứng từ và gửi SMTP...'):
+                    try:
+                        file_name = f"Booking_Note_{booking_no}.html"
+                        file_content = f"<html><body><h2>ELOGS LOGISTICS SYSTEM</h2><hr><ul><li><b>Booking:</b> {booking_no}</li><li><b>Container:</b> {container_no}</li><li><b>Cut-off:</b> <span style='color:red;'>{cut_off}</span></li></ul></body></html>"
+                        with open(file_name, "w", encoding="utf-8") as f: f.write(file_content)
+
+                        msg = MIMEMultipart()
+                        msg['From'], msg['To'], msg['Subject'] = SENDER_EMAIL, receiver_email, f"[URGENT] Lịch Cut-off lô hàng {booking_no}"
+                        if cc_email: msg['Cc'] = cc_email
+                        msg.attach(MIMEText("Kính gửi quý đối tác, vui lòng kiểm tra thông tin lịch trình chi tiết trong tệp đính kèm.", 'plain', 'utf-8'))
+
+                        with open(file_name, "rb") as attachment:
+                            part = MIMEBase("application", "octet-stream")
+                            part.set_payload(attachment.read())
+                        encoders.encode_base64(part)
+                        part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
+                        msg.attach(part)
+
+                        if uploaded_file:
+                            file_part = MIMEBase("application", "octet-stream")
+                            file_part.set_payload(uploaded_file.read())
+                            encoders.encode_base64(file_part)
+                            file_part.add_header("Content-Disposition", f"attachment; filename={uploaded_file.name}")
+                            msg.attach(file_part)
+
+                        server = smtplib.SMTP('smtp.gmail.com', 587)
+                        server.starttls()
+                        server.login(SENDER_EMAIL, APP_PASSWORD)
+                        server.send_message(msg)
+                        server.quit()
+                        st.success("🎉 Hệ thống đã gửi email thông báo thành công đến đối tác!")
+                    except Exception as e:
+                        st.error(f"❌ Gặp sự cố khi gửi thư qua Gmail: {e}")
+
+# ==========================================
+# MÀN HÌNH 3: CÀI ĐẶT
+# ==========================================
+elif menu == "⚙️ Cài đặt hệ thống":
+    st.title("⚙️ Cài đặt Hệ thống")
+    st.info("Tính năng phân quyền đại lý, kết nối API nhà xe và thiết lập thông số EDI sẽ xuất hiện trong bản cập nhật lớn tiếp theo.")
