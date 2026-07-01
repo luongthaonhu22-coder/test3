@@ -275,3 +275,30 @@ with tab_mail:
                     st.balloons()
                 except Exception as e:
                     st.error(f"❌ Lỗi gửi mail: {e}. Vui lòng kiểm tra tài khoản cấu hình.")
+# ==========================================
+# TAB 2: GỬI MAIL PRE-ALERT KÈM CHỨNG TỪ (ĐÃ THÊM NÚT TRA CỨU)
+# ==========================================
+with tab_mail:
+    st.subheader("📸 Quét mã QR/Barcode")
+    scanned_data = st.text_input("Nhập mã Booking (VD: BKG-123):", placeholder="BKG-123")
+    
+  
+    if st.button("🔍 Tra cứu thông tin từ Server"):
+        if scanned_data:
+            try:
+                import requests
+                # Kết nối tới máy chủ ảo đang chạy ở port 8000
+                response = requests.get(f"http://127.0.0.1:8000/shipment/{scanned_data}")
+                if response.status_code == 200:
+                    data = response.json()
+                    st.success(f"Dữ liệu tìm thấy: {data}")
+                else:
+                    st.warning("Không tìm thấy dữ liệu trên Server!")
+            except Exception as e:
+                st.error("Không thể kết nối tới Server API. Bạn đã chạy lệnh python mock_server.py chưa?")
+        else:
+            st.warning("Vui lòng nhập mã Booking!")
+        
+    st.markdown("---")
+    st.subheader("📎 Gửi thông báo kèm chứng từ")
+   
