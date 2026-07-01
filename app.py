@@ -8,6 +8,7 @@ import pandas as pd
 from datetime import date, datetime
 import matplotlib.pyplot as plt
 import requests 
+import time 
 
 # --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC LÊN AWS) ---
 def auto_assign_task(task_name, priority_level):
@@ -208,3 +209,21 @@ with tab_mail:
                     st.success("🎉 Email thông báo đã gửi thành công!")
                 except Exception as e:
                     st.error(f"❌ Lỗi gửi mail: {e}")
+                    if st.button("🔍 Tra cứu thông tin từ Server API"):
+        if scanned_data:
+            with st.spinner('Đang tìm kiếm dữ liệu trên Đám mây...'):
+                time.sleep(1.5) # Giả lập thời gian chờ mạng lag
+                
+                # Kho dữ liệu mô phỏng (Mang từ mock_server sang đây)
+                logistics_data = {
+                    "BKG-123": {"booking": "BKG-123", "status": "On Board", "vessel": "EVER GIVEN", "port": "Cát Lái"},
+                    "BKG-456": {"booking": "BKG-456", "status": "Pending", "vessel": "MAERSK ESSEN", "port": "Hải Phòng"}
+                }
+                
+                if scanned_data in logistics_data:
+                    data = logistics_data[scanned_data]
+                    st.success(f"🎉 Kết nối thành công! Dữ liệu: {data}")
+                else:
+                    st.warning("⚠️ Hệ thống báo: Không tìm thấy lô hàng này!")
+        else:
+            st.warning("⚠️ Vui lòng nhập mã Booking trước khi tra cứu!")
