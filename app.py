@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import date, datetime
 import matplotlib.pyplot as plt
 import requests 
-import time 
+import time # Thư viện dùng để giả lập độ trễ của mạng
 
 # --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC LÊN AWS) ---
 def auto_assign_task(task_name, priority_level):
@@ -121,109 +121,3 @@ with tab_dashboard:
     with col_chart1:
         st.write("Tỷ lệ trạng thái công việc:")
         fig, ax = plt.subplots(figsize=(5, 3))
-        status_counts.plot(kind='pie', autopct='%1.1f%%', ax=ax, colors=['#ff9999','#66b3ff','#99ff99'])
-        ax.set_ylabel("") 
-        st.pyplot(fig)
-        
-    with col_chart2:
-        st.write("Số lượng đầu việc theo nhãn:")
-        label_counts = edited_df["🏷️ Nhãn"].value_counts()
-        st.bar_chart(label_counts)
-
-# ==========================================
-# TAB 2: PRE-ALERT & CHỨNG TỪ (KẾT NỐI MOCK API SERVER)
-# ==========================================
-with tab_mail:
-    st.subheader("📡 Tra cứu lô hàng từ Hệ thống API")
-    scanned_data = st.text_input("Nhập mã Booking cần tra cứu (Ví dụ: BKG-123 hoặc BKG-456):", placeholder="BKG-123")
-    
-    # NÚT BẤM GỌI ĐẾN MOCK SERVER CỦA BẠN
-    if st.button("🔍 Tra cứu thông tin từ Server API"):
-        if scanned_data:
-            with st.spinner('Đang kết nối tới Server cổng 8000...'):
-                try:
-                    response = requests.get(f"http://127.0.0.1:8000/shipment/{scanned_data}", timeout=5)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if "error" in data:
-                            st.warning(f"⚠️ Hệ thống báo: {data['error']}")
-                        else:
-                            st.success(f"🎉 Kết nối thành công! Dữ liệu trả về từ Server: {data}")
-                    else:
-                        st.error(f"❌ Server phản hồi lỗi mã: {response.status_code}")
-                except Exception as e:
-                    st.error("🔌 Không thể kết nối tới Server API! Bạn đã chạy file 'mock_server.py' ở PowerShell chưa?")
-        else:
-            st.warning("⚠️ Vui lòng nhập mã Booking trước khi tra cứu!")
-        
-    st.markdown("---")
-    st.subheader("📎 Gửi thông báo kèm chứng từ Email")
-    
-    colA, colB = st.columns(2)
-    with colA: receiver_email = st.text_input("Gửi đến (To - Bắt buộc):")
-    with colB: cc_email = st.text_input("Đồng gửi (CC - Tùy chọn):")
-        
-    col1, col2, col3 = st.columns(3)
-    booking_no = col1.text_input("Số Booking:", "BKG-VNM-998877")
-    container_no = col2.text_input("Số Container:", "CMAU1234567")
-    cut_off = col3.text_input("Cut-off:", "17:00 - 25/06/2026")
-    
-    uploaded_file = st.file_uploader("Tải ảnh chứng từ lên (JPG, PNG, PDF - Tùy chọn):", type=['jpg', 'jpeg', 'png', 'pdf'])
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button("🚀 XÁC NHẬN GỬI THÔNG BÁO EMAIL"):
-        if not receiver_email:
-            st.error("⚠️ Vui lòng điền Email người nhận!")
-        else:
-            with st.spinner('Hệ thống đang gửi email...'):
-                try:
-                    file_name = f"Booking_Note_{booking_no}.html"
-                    file_content = f"""<html><body><h2>CÔNG TY LOGISTICS ELOGS</h2><hr><ul><li><b>Booking:</b> {booking_no}</li><li><b>Container:</b> {container_no}</li><li><b>Cut-off:</b> <span style='color:red;'>{cut_off}</span></li></ul></body></html>"""
-                    with open(file_name, "w", encoding="utf-8") as f: f.write(file_content)
-
-                    msg = MIMEMultipart()
-                    msg['From'], msg['To'] = SENDER_EMAIL, receiver_email
-                    if cc_email: msg['Cc'] = cc_email
-                    msg['Subject'] = f"[URGENT] Thông báo lịch Cut-off lô hàng {booking_no}"
-                    msg.attach(MIMEText("Chi tiết lô hàng vui lòng kiểm tra file đính kèm.", 'plain', 'utf-8'))
-
-                    with open(file_name, "rb") as attachment:
-                        part = MIMEBase("application", "octet-stream")
-                        part.set_payload(attachment.read())
-                    encoders.encode_base64(part)
-                    part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
-                    msg.attach(part)
-
-                    if uploaded_file is not None:
-                        file_part = MIMEBase("application", "octet-stream")
-                        file_part.set_payload(uploaded_file.read())
-                        encoders.encode_base64(file_part)
-                        file_part.add_header("Content-Disposition", f"attachment; filename={uploaded_file.name}")
-                        msg.attach(file_part)
-
-                    server = smtplib.SMTP('smtp.gmail.com', 587)
-                    server.starttls()
-                    server.login(SENDER_EMAIL, APP_PASSWORD)
-                    server.send_message(msg)
-                    server.quit()
-                    st.success("🎉 Email thông báo đã gửi thành công!")
-                except Exception as e:
-                    st.error(f"❌ Lỗi gửi mail: {e}")
-                    if st.button("🔍 Tra cứu thông tin từ Server API"):
-                    if scanned_data:
-            with st.spinner('Đang tìm kiếm dữ liệu trên Đám mây...'):
-                time.sleep(1.5) # Giả lập thời gian chờ mạng lag
-                
-                # Kho dữ liệu mô phỏng (Mang từ mock_server sang đây)
-                logistics_data = {
-                    "BKG-123": {"booking": "BKG-123", "status": "On Board", "vessel": "EVER GIVEN", "port": "Cát Lái"},
-                    "BKG-456": {"booking": "BKG-456", "status": "Pending", "vessel": "MAERSK ESSEN", "port": "Hải Phòng"}
-                }
-                
-                if scanned_data in logistics_data:
-                    data = logistics_data[scanned_data]
-                    st.success(f"🎉 Kết nối thành công! Dữ liệu: {data}")
-                else:
-                    st.warning("⚠️ Hệ thống báo: Không tìm thấy lô hàng này!")
-        else:
-            st.warning("⚠️ Vui lòng nhập mã Booking trước khi tra cứu!")
