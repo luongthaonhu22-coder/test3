@@ -210,7 +210,7 @@ with tab_mail:
                 except Exception as e:
                     st.error(f"❌ Lỗi gửi mail: {e}")
                     if st.button("🔍 Tra cứu thông tin từ Server API"):
-        if scanned_data:
+                    if scanned_data:
             with st.spinner('Đang tìm kiếm dữ liệu trên Đám mây...'):
                 time.sleep(1.5) # Giả lập thời gian chờ mạng lag
                 
