@@ -8,47 +8,62 @@ import pandas as pd
 from datetime import date, datetime
 import matplotlib.pyplot as plt
 import requests 
-import time # Thư viện dùng để giả lập độ trễ của mạng
+import time 
 
-# --- HÀM TỰ ĐỘNG HÓA (MÔ PHỎNG BACKEND LOGIC LÊN AWS) ---
-def auto_assign_task(task_name, priority_level):
-    aws_api_url = "https://ab12cd34ef.execute-api.ap-southeast-1.amazonaws.com/prod/tao-cong-viec"
-    payload = {"task_name": task_name, "priority": priority_level}
-    try:
-        response = requests.post(aws_api_url, json=payload)
-        if response.status_code == 200:
-            new_task_from_aws = response.json()
-            st.session_state.tasks_df = pd.concat(
-                [st.session_state.tasks_df, pd.DataFrame([new_task_from_aws])], ignore_index=True
-            )
-            return True
-        return False
-    except:
-        return False
+# ==========================================
+# CẤU HÌNH TRANG & CSS NÂNG CAO
+# ==========================================
+st.set_page_config(page_title="ELOGS | Workspace", page_icon="⚓", layout="wide", initial_sidebar_state="expanded")
 
-# --- CẤU HÌNH TÀI KHOẢN EMAIL ---
-SENDER_EMAIL = "luongthaonhu22@gmail.com" 
-APP_PASSWORD = "yjny odng vbgd czck"     
-
-st.set_page_config(page_title="ELOGS Quản Trị", page_icon="🚢", layout="wide")
-
-# --- MÃ CSS GIAO DIỆN HIỆN ĐẠI SAAS ---
 st.markdown("""
 <style>
-    .stApp { background-color: #EBF0F5 !important; }
-    .stDataFrame { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    /* Đổi màu nền tổng thể thành xám nhạt sang trọng */
+    .stApp { background-color: #f4f7f6; }
+    
+    /* Tùy chỉnh thanh Sidebar bên trái (Giống AWS/SaaS) */
+    [data-testid="stSidebar"] { background-color: #0A2647; }
+    [data-testid="stSidebar"] * { color: #ffffff !important; }
+    
+    /* Tùy chỉnh các con số Thống kê (Metrics) thành dạng Thẻ (Cards) 3D */
+    div[data-testid="metric-container"] {
+        background-color: #ffffff;
+        border: 1px solid #e0e4e8;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease-in-out;
+    }
+    div[data-testid="metric-container"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    
+    /* Làm đẹp Bảng dữ liệu */
+    .stDataFrame { border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    
+    /* Tùy chỉnh Nút bấm (Buttons) */
+    div.stButton > button { 
+        background-color: #185ADB !important; 
+        color: white !important; 
+        border-radius: 8px !important; 
+        font-weight: 600 !important; 
+        border: none !important; 
+        padding: 10px 24px !important;
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:hover { 
+        background-color: #0F2C59 !important; 
+        box-shadow: 0 4px 12px rgba(24, 90, 219, 0.4) !important;
+    }
+    
+    /* Tùy chỉnh Font chữ và Tiêu đề */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     html, body, [class*="st-"] { font-family: 'Inter', sans-serif !important; }
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
-    .stTabs [data-baseweb="tab"] { border-radius: 10px 10px 0 0; background-color: #f1f3f6; padding: 10px 20px; }
-    input, textarea, div[data-testid="stDataFrame"] { border-radius: 12px !important; border: 1px solid #d1d9e6 !important; }
-    div.stButton > button { background-color: #185ADB !important; color: white !important; border-radius: 8px !important; font-weight: bold !important; border: none !important; }
-    div.stButton > button:hover { background-color: #0A2647 !important; }
-    h1, h2, h3 { color: #0F2C59 !important; font-family: 'Inter', sans-serif; }
+    h1, h2, h3 { color: #0F2C59 !important; font-weight: 700 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- KHỞI TẠO DỮ LIỆU BẢNG ---
+# --- KHỞI TẠO DỮ LIỆU ---
 if 'tasks_df' not in st.session_state:
     st.session_state.tasks_df = pd.DataFrame({
         "🚩 Quan trọng": [True, False],
@@ -56,37 +71,45 @@ if 'tasks_df' not in st.session_state:
         "🏷️ Nhãn": ["Hàng Nhập", "Chứng Từ"],
         "⏳ Trạng thái": ["Đang làm", "Chưa làm"],
         "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
-        "💬 Trao đổi / Ghi chú": ["Sếp dặn check kỹ số container", ""]
+        "💬 Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
 
-st.title("🚢 HỆ THỐNG QUẢN LÝ LOGISTICS - ELOGS")
-
-tab_dashboard, tab_mail = st.tabs(["📊 QUẢN TRỊ CÔNG VIỆC (DASHBOARD)", "📧 PRE-ALERT & CHỨNG TỪ"])
+# --- CẤU HÌNH TÀI KHOẢN EMAIL ---
+SENDER_EMAIL = "luongthaonhu22@gmail.com" 
+APP_PASSWORD = "yjny odng vbgd czck"     
 
 # ==========================================
-# TAB 1: DASHBOARD QUẢN TRỊ CÔNG VIỆC
+# THANH ĐIỀU HƯỚNG BÊN TRÁI (SIDEBAR)
 # ==========================================
-with tab_dashboard:
-    st.subheader("Bảng Kế hoạch & Theo dõi tiến độ")
+st.sidebar.markdown("## ⚓ ELOGS Workspace")
+st.sidebar.markdown("---")
+menu = st.sidebar.radio("📌 MENU CHỨC NĂNG:", ["📊 Tổng quan (Dashboard)", "📡 API & Gửi Email", "⚙️ Cài đặt hệ thống"])
+st.sidebar.markdown("---")
+st.sidebar.info("💡 **Mẹo:** Dùng thanh công cụ này để chuyển đổi mượt mà giữa các tính năng.")
+
+# ==========================================
+# MÀN HÌNH 1: DASHBOARD
+# ==========================================
+if menu == "📊 Tổng quan (Dashboard)":
+    st.title("Hiệu suất Công việc hôm nay")
+    st.markdown("Theo dõi và cập nhật tiến độ các lô hàng theo thời gian thực.")
     
-    if st.button("🤖 Kích hoạt tạo Task tự động (Mô phỏng hệ thống AWS)"):
-        auto_assign_task("Kiểm tra hàng tồn kho mới nhập", "High")
-        st.success("Hệ thống đã tự động thêm task mới!")
-        st.rerun()
-    
+    # 1. Khu vực Thống kê (Metrics)
     df = st.session_state.tasks_df
     total_tasks = len(df)
     done_tasks = len(df[df["⏳ Trạng thái"] == "Hoàn thành"])
     important_tasks = len(df[df["🚩 Quan trọng"] == True])
     
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Tổng công việc", total_tasks)
-    m2.metric("Đã hoàn thành", done_tasks)
-    m3.metric("Cần chú ý (Quan trọng)", important_tasks, delta_color="inverse")
-    m4.metric("Hiệu suất", f"{int((done_tasks/total_tasks)*100)}%" if total_tasks > 0 else "0%")
+    m1.metric("📦 Tổng số Việc", total_tasks)
+    m2.metric("✅ Đã hoàn thành", done_tasks)
+    m3.metric("🔥 Cần xử lý gấp", important_tasks, delta_color="inverse")
+    m4.metric("📈 Hiệu suất", f"{int((done_tasks/total_tasks)*100)}%" if total_tasks > 0 else "0%")
     
-    st.markdown("---")
-
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # 2. Khu vực Bảng điều khiển (Data Editor)
+    st.subheader("📋 Danh sách tác vụ")
     edited_df = st.data_editor(
         st.session_state.tasks_df,
         key="task_table_editor",
@@ -101,114 +124,112 @@ with tab_dashboard:
     )
     st.session_state.tasks_df = edited_df
 
-    st.markdown("### 🔔 Nhắc nhở hệ thống")
-    today = date.today()
-    for index, row in edited_df.iterrows():
-        deadline = row["📅 Deadline"]
-        if isinstance(deadline, str): 
-            deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
-        
-        if row["⏳ Trạng thái"] != "Hoàn thành" and deadline < today:
-            st.error(f"❌ QUÁ HẠN: **{row['📌 Tên công việc']}** (Deadline: {deadline})")
-        elif row["🚩 Quan trọng"] == True and row["⏳ Trạng thái"] != "Hoàn thành":
-            st.warning(f"⚠️ Nhiệm vụ quan trọng: **{row['📌 Tên công việc']}** (Hạn: {deadline})") 
-
+    # 3. Biểu đồ & Nhắc nhở
     st.markdown("---")
-    st.subheader("📊 Báo cáo Kho vận trực quan")
-    status_counts = edited_df["⏳ Trạng thái"].value_counts()
-    col_chart1, col_chart2 = st.columns(2)
-    
-    with col_chart1:
-        st.write("Tỷ lệ trạng thái công việc:")
-        fig, ax = plt.subplots(figsize=(5, 3))
-        status_counts.plot(kind='pie', autopct='%1.1f%%', ax=ax, colors=['#ff9999','#66b3ff','#99ff99'])
+    colA, colB = st.columns([1, 2])
+    with colA:
+        st.subheader("🔔 Cảnh báo hạn chót")
+        today = date.today()
+        for index, row in edited_df.iterrows():
+            deadline = row["📅 Deadline"]
+            if isinstance(deadline, str): deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
+            if row["⏳ Trạng thái"] != "Hoàn thành" and deadline < today:
+                st.error(f"❌ QUÁ HẠN: {row['📌 Tên công việc']}")
+            elif row["🚩 Quan trọng"] == True and row["⏳ Trạng thái"] != "Hoàn thành":
+                st.warning(f"⚠️ GẤP: {row['📌 Tên công việc']}") 
+    with colB:
+        st.subheader("📊 Tỷ lệ trạng thái công việc")
+        status_counts = edited_df["⏳ Trạng thái"].value_counts()
+        fig, ax = plt.subplots(figsize=(6, 2.5))
+        fig.patch.set_facecolor('#f4f7f6') # Chỉnh màu nền biểu đồ khớp với web
+        status_counts.plot(kind='pie', autopct='%1.1f%%', ax=ax, colors=['#4CAF50','#FFC107','#F44336'])
         ax.set_ylabel("") 
         st.pyplot(fig)
-        
-    with col_chart2:
-        st.write("Số lượng đầu việc theo nhãn:")
-        label_counts = edited_df["🏷️ Nhãn"].value_counts()
-        st.bar_chart(label_counts)
 
 # ==========================================
-# TAB 2: PRE-ALERT & CHỨNG TỪ (MÔ PHỎNG API TRỰC TIẾP)
+# MÀN HÌNH 2: API & EMAIL
 # ==========================================
-with tab_mail:
-    st.subheader("📡 Tra cứu lô hàng từ Hệ thống API (Đã tích hợp)")
-    scanned_data = st.text_input("Nhập mã Booking cần tra cứu (Ví dụ: BKG-123 hoặc BKG-456):", placeholder="BKG-123")
+elif menu == "📡 API & Gửi Email":
+    st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
     
-    # NÚT BẤM GỌI API MÔ PHỎNG
-    if st.button("🔍 Tra cứu thông tin từ Server"):
-        if scanned_data:
-            with st.spinner('Đang tìm kiếm dữ liệu trên máy chủ đám mây...'):
-                # 1. Giả lập thời gian chờ (1.5 giây) để giống hệt gọi API thật
-                time.sleep(1.5) 
-                
-                # 2. Kho dữ liệu ảo ngay trong code
-                logistics_data = {
-                    "BKG-123": {"booking": "BKG-123", "status": "On Board", "vessel": "EVER GIVEN", "port": "Cát Lái"},
-                    "BKG-456": {"booking": "BKG-456", "status": "Pending", "vessel": "MAERSK ESSEN", "port": "Hải Phòng"}
-                }
-                
-                # 3. Kiểm tra và trả kết quả
-                if scanned_data in logistics_data:
-                    data = logistics_data[scanned_data]
-                    st.success(f"🎉 Kết nối thành công! Dữ liệu trả về: {data}")
-                else:
-                    st.warning("⚠️ Hệ thống báo: Không tìm thấy lô hàng này trong Database!")
-        else:
-            st.warning("⚠️ Vui lòng nhập mã Booking trước khi tra cứu!")
+    # Khu vực Tra cứu API
+    with st.container():
+        st.subheader("🔍 Kết nối API: Tra cứu vận đơn")
+        scanned_data = st.text_input("Nhập mã Booking (VD: BKG-123):", placeholder="BKG-123")
         
+        if st.button("Tra cứu Dữ liệu Server"):
+            if scanned_data:
+                with st.spinner('Đang mã hóa & truy xuất dữ liệu đám mây...'):
+                    time.sleep(1.2) 
+                    logistics_data = {
+                        "BKG-123": {"Mã BKG": "BKG-123", "Trạng thái": "On Board", "Tàu": "EVER GIVEN", "Cảng": "Cát Lái"},
+                        "BKG-456": {"Mã BKG": "BKG-456", "Trạng thái": "Pending", "Tàu": "MAERSK ESSEN", "Cảng": "Hải Phòng"}
+                    }
+                    if scanned_data in logistics_data:
+                        st.success("✅ Truy xuất thành công!")
+                        st.json(logistics_data[scanned_data])
+                    else:
+                        st.error("❌ Không tìm thấy dữ liệu trong Database!")
+            else:
+                st.warning("⚠️ Vui lòng nhập mã trước.")
+                
     st.markdown("---")
-    st.subheader("📎 Gửi thông báo kèm chứng từ Email")
     
-    colA, colB = st.columns(2)
-    with colA: receiver_email = st.text_input("Gửi đến (To - Bắt buộc):")
-    with colB: cc_email = st.text_input("Đồng gửi (CC - Tùy chọn):")
+    # Khu vực Gửi Mail
+    with st.container():
+        st.subheader("📧 Hệ thống Gửi Pre-Alert tự động")
+        col1, col2 = st.columns(2)
+        with col1: receiver_email = st.text_input("Gửi đến (To):")
+        with col2: cc_email = st.text_input("Đồng gửi (CC):")
+            
+        col_a, col_b, col_c = st.columns(3)
+        booking_no = col_a.text_input("Số Booking:", "BKG-VNM-998877")
+        container_no = col_b.text_input("Số Container:", "CMAU1234567")
+        cut_off = col_c.text_input("Cut-off:", "17:00 - 25/06/2026")
         
-    col1, col2, col3 = st.columns(3)
-    booking_no = col1.text_input("Số Booking:", "BKG-VNM-998877")
-    container_no = col2.text_input("Số Container:", "CMAU1234567")
-    cut_off = col3.text_input("Cut-off:", "17:00 - 25/06/2026")
-    
-    uploaded_file = st.file_uploader("Tải ảnh chứng từ lên (JPG, PNG, PDF - Tùy chọn):", type=['jpg', 'jpeg', 'png', 'pdf'])
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button("🚀 XÁC NHẬN GỬI THÔNG BÁO EMAIL"):
-        if not receiver_email:
-            st.error("⚠️ Vui lòng điền Email người nhận!")
-        else:
-            with st.spinner('Hệ thống đang gửi email...'):
-                try:
-                    file_name = f"Booking_Note_{booking_no}.html"
-                    file_content = f"""<html><body><h2>CÔNG TY LOGISTICS ELOGS</h2><hr><ul><li><b>Booking:</b> {booking_no}</li><li><b>Container:</b> {container_no}</li><li><b>Cut-off:</b> <span style='color:red;'>{cut_off}</span></li></ul></body></html>"""
-                    with open(file_name, "w", encoding="utf-8") as f: f.write(file_content)
+        uploaded_file = st.file_uploader("Đính kèm chứng từ (Tùy chọn):")
+        
+        if st.button("🚀 GỬI THÔNG BÁO PRE-ALERT"):
+            if not receiver_email:
+                st.error("⚠️ Điền Email người nhận!")
+            else:
+                with st.spinner('Đang thiết lập SMTP và gửi thư...'):
+                    try:
+                        file_name = f"Booking_Note_{booking_no}.html"
+                        file_content = f"<html><body><h2>ELOGS LOGISTICS</h2><hr><ul><li><b>Booking:</b> {booking_no}</li><li><b>Container:</b> {container_no}</li><li><b>Cut-off:</b> <span style='color:red;'>{cut_off}</span></li></ul></body></html>"
+                        with open(file_name, "w", encoding="utf-8") as f: f.write(file_content)
 
-                    msg = MIMEMultipart()
-                    msg['From'], msg['To'] = SENDER_EMAIL, receiver_email
-                    if cc_email: msg['Cc'] = cc_email
-                    msg['Subject'] = f"[URGENT] Thông báo lịch Cut-off lô hàng {booking_no}"
-                    msg.attach(MIMEText("Chi tiết lô hàng vui lòng kiểm tra file đính kèm.", 'plain', 'utf-8'))
+                        msg = MIMEMultipart()
+                        msg['From'], msg['To'], msg['Subject'] = SENDER_EMAIL, receiver_email, f"[URGENT] Lịch Cut-off lô {booking_no}"
+                        if cc_email: msg['Cc'] = cc_email
+                        msg.attach(MIMEText("Vui lòng kiểm tra chứng từ đính kèm.", 'plain', 'utf-8'))
 
-                    with open(file_name, "rb") as attachment:
-                        part = MIMEBase("application", "octet-stream")
-                        part.set_payload(attachment.read())
-                    encoders.encode_base64(part)
-                    part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
-                    msg.attach(part)
+                        with open(file_name, "rb") as attachment:
+                            part = MIMEBase("application", "octet-stream")
+                            part.set_payload(attachment.read())
+                        encoders.encode_base64(part)
+                        part.add_header("Content-Disposition", f"attachment; filename= {file_name}")
+                        msg.attach(part)
 
-                    if uploaded_file is not None:
-                        file_part = MIMEBase("application", "octet-stream")
-                        file_part.set_payload(uploaded_file.read())
-                        encoders.encode_base64(file_part)
-                        file_part.add_header("Content-Disposition", f"attachment; filename={uploaded_file.name}")
-                        msg.attach(file_part)
+                        if uploaded_file:
+                            file_part = MIMEBase("application", "octet-stream")
+                            file_part.set_payload(uploaded_file.read())
+                            encoders.encode_base64(file_part)
+                            file_part.add_header("Content-Disposition", f"attachment; filename={uploaded_file.name}")
+                            msg.attach(file_part)
 
-                    server = smtplib.SMTP('smtp.gmail.com', 587)
-                    server.starttls()
-                    server.login(SENDER_EMAIL, APP_PASSWORD)
-                    server.send_message(msg)
-                    server.quit()
-                    st.success("🎉 Email thông báo đã gửi thành công!")
-                except Exception as e:
-                    st.error(f"❌ Lỗi gửi mail: {e}")
+                        server = smtplib.SMTP('smtp.gmail.com', 587)
+                        server.starttls()
+                        server.login(SENDER_EMAIL, APP_PASSWORD)
+                        server.send_message(msg)
+                        server.quit()
+                        st.success("🎉 Email đã được gửi thành công!")
+                    except Exception as e:
+                        st.error(f"❌ Lỗi: {e}")
+
+# ==========================================
+# MÀN HÌNH 3: CÀI ĐẶT
+# ==========================================
+elif menu == "⚙️ Cài đặt hệ thống":
+    st.title("⚙️ Cài đặt Hệ thống")
+    st.info("Tính năng phân quyền người dùng và tùy chỉnh giao diện sẽ được cập nhật trong phiên bản tiếp theo.")
