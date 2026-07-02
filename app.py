@@ -56,7 +56,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- KHỞI TẠO KHO DỮ LIỆU TÁC VỤ ---
+# --- KHỞI TẠO KHO DỮ LIỆU & QUẢN LÝ TRẠNG THÁI ---
 if 'tasks_df' not in st.session_state:
     st.session_state.tasks_df = pd.DataFrame({
         "🚩 Quan trọng": [True, False],
@@ -66,6 +66,9 @@ if 'tasks_df' not in st.session_state:
         "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
         "💬 Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
+    # Khởi tạo bản nháp và định vị Tab hiện tại
+    st.session_state.temp_edited_df = st.session_state.tasks_df
+    st.session_state.current_tab = "📊 Tổng quan (Dashboard)"
 
 # --- CẤU HÌNH TÀI KHOẢN EMAIL ---
 SENDER_EMAIL = "luongthaonhu22@gmail.com" 
@@ -81,8 +84,14 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
     "📡 Tra cứu & Gửi Email", 
     "⚙️ Cài đặt hệ thống"
 ])
+
+# ✨ THUẬT TOÁN ĐỒNG BỘ: Chỉ cập nhật dữ liệu gốc khi chuyển Tab
+if menu != st.session_state.current_tab:
+    st.session_state.tasks_df = st.session_state.temp_edited_df
+    st.session_state.current_tab = menu
+
 st.sidebar.markdown("---")
-st.sidebar.info("💡 **Hệ thống đã sẵn sàng:** Giao diện tra cứu API đã được xử lý chống lỗi hoàn hảo.")
+st.sidebar.info("💡 **Giao diện 4.0:** Bảng công việc đã được xử lý chống giật lag, thêm việc mới mượt mà không bị mất dòng.")
 
 # ==========================================
 # MÀN HÌNH 1: DASHBOARD
@@ -91,19 +100,12 @@ if menu == "📊 Tổng quan (Dashboard)":
     st.title("Hiệu suất Công việc hôm nay")
     st.markdown("Theo dõi và cập nhật tiến độ các lô hàng theo thời gian thực.")
     
-    df = st.session_state.tasks_df
-    total_tasks = len(df)
-    done_tasks = len(df[df["⏳ Trạng thái"] == "Hoàn thành"])
-    important_tasks = len(df[df["🚩 Quan trọng"] == True])
-    
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("📦 Tổng số Việc", total_tasks)
-    m2.metric("✅ Đã hoàn thành", done_tasks)
-    m3.metric("🔥 Cần xử lý gấp", important_tasks, delta_color="inverse")
-    m4.metric("📈 Hiệu suất", f"{int((done_tasks/total_tasks)*100)}%" if total_tasks > 0 else "0%")
+    # 1. TẠO VÙNG CHỨA GIỮ CHỖ CHO THỐNG KÊ (Để in ra ở trên cùng)
+    metrics_container = st.container()
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # 2. HIỂN THỊ BẢNG (Xử lý trước để có dữ liệu mới nhất)
     st.subheader("📋 Danh sách tác vụ đang quản lý")
     edited_df = st.data_editor(
         st.session_state.tasks_df,
@@ -117,7 +119,20 @@ if menu == "📊 Tổng quan (Dashboard)":
             "📅 Deadline": st.column_config.DateColumn("Deadline"),
         }
     )
-    st.session_state.tasks_df = edited_df
+    # Lưu vào nháp, tuyệt đối KHÔNG ghi đè trực tiếp lên tasks_df ở đây
+    st.session_state.temp_edited_df = edited_df
+
+    # 3. ĐIỀN DỮ LIỆU LÊN VÙNG CHỨA PHÍA TRÊN
+    with metrics_container:
+        total_tasks = len(edited_df)
+        done_tasks = len(edited_df[edited_df["⏳ Trạng thái"] == "Hoàn thành"])
+        important_tasks = len(edited_df[edited_df["🚩 Quan trọng"] == True])
+        
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("📦 Tổng số Việc", total_tasks)
+        m2.metric("✅ Đã hoàn thành", done_tasks)
+        m3.metric("🔥 Cần xử lý gấp", important_tasks, delta_color="inverse")
+        m4.metric("📈 Hiệu suất", f"{int((done_tasks/total_tasks)*100)}%" if total_tasks > 0 else "0%")
 
     st.markdown("---")
     
@@ -142,7 +157,7 @@ if menu == "📊 Tổng quan (Dashboard)":
         st.pyplot(fig)
 
 # ==========================================
-# MÀN HÌNH 2: API & GỬI EMAIL (FIX LỖI HTML TRIỆT ĐỂ)
+# MÀN HÌNH 2: API & GỬI EMAIL 
 # ==========================================
 elif menu == "📡 Tra cứu & Gửi Email":
     st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
@@ -198,7 +213,6 @@ elif menu == "📡 Tra cứu & Gửi Email":
                         elif "Leave Behind" in status_str: bg_badge, text_badge = "#f8d7da", "#721c24" 
                         elif "In Transit" in status_str: bg_badge, text_badge = "#e0f7fa", "#006064" 
                         
-                        # ⚠️ ÉP TOÀN BỘ HTML THÀNH 1 DÒNG DUY NHẤT ĐỂ STREAMLIT KHÔNG THỂ HIỂU NHẦM LÀ CODE BLOCK
                         html_card = f"<div style='background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e3e8ee; margin-top: 15px; margin-bottom: 15px;'><div style='display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px;'><div><span style='font-size: 11px; color: #a0aec0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;'>Mã số quản lý vận đơn</span><h3 style='margin: 0; color: #0A2647; font-size: 24px; font-weight: 700;'>{res['Mã Vận Đơn']}</h3></div><div style='background-color: {bg_badge}; color: {text_badge}; padding: 8px 18px; border-radius: 24px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;'>● {status_str}</div></div><div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;'><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Hãng Tàu (Carrier)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;'>{res['Hãng Tàu']}</div></div><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Phương tiện (Vessel/Voy/Truck)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px; font-family: monospace;'>{res['Tàu vận chuyển']}</div></div><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Cảng xếp hàng (POL)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;'>{res['Cảng xếp hàng (POL)']}</div></div><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Cảng dỡ hàng (POD)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;'>{res['Cảng dỡ hàng (POD)']}</div></div></div></div>"
                         
                         st.markdown(html_card, unsafe_allow_html=True)
