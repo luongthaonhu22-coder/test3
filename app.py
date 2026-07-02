@@ -245,8 +245,8 @@ elif menu == "📡 Tra cứu & Gửi Email":
         cut_off = col_c.text_input("Thời gian Cut-off:", "17:00 - 25/06/2026")
         
         uploaded_file = st.file_uploader("Đính kèm tệp chứng từ bổ sung (Hình ảnh, PDF):")
-        if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
-        if not receiver_email:
+                    if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
+                    if not receiver_email:
         st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
     else:
         with st.spinner('Đang đóng gói và gửi chứng từ...'):
