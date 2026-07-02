@@ -100,7 +100,7 @@ if 'tasks_df' not in st.session_state:
         "📌 Tên công việc": ["Khai E-port lô BKG-123", "Gửi SI hãng tàu Evergreen"],
         "🏷️ Nhãn": ["Hàng Nhập", "Chứng Từ"],
         "⏳ Trạng thái": ["Đang làm", "Chưa làm"],
-        "📅 Deadline": [date(2026, 7, 5), date(2026, 7, 5)], 
+        "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
         "💬 Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
 
@@ -119,7 +119,7 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
     "⚙️ Cài đặt hệ thống"
 ])
 st.sidebar.markdown("---")
-st.sidebar.info("💡 **Giao diện Chuyên nghiệp:** Chứng từ đính kèm đã được thiết kế lại chuẩn form biểu Doanh nghiệp vận tải quốc tế.")
+st.sidebar.info("💡 **Dữ liệu mở rộng:** Đã cập nhật thêm nhiều mã hãng tàu lớn (Maersk, CMA CGM, MSC) vào hệ thống tra cứu API.")
 
 # ==========================================
 # MÀN HÌNH 1: DASHBOARD
@@ -179,28 +179,76 @@ if menu == "📊 Tổng quan (Dashboard)":
         st.pyplot(fig)
 
 # ==========================================
-# MÀN HÌNH 2: API & GỬI EMAIL (ĐÃ ĐẠI TU FILE ĐÍNH KÈM)
+# MÀN HÌNH 2: API & GỬI EMAIL (ĐÃ THÊM NHIỀU MÃ BILL)
 # ==========================================
 elif menu == "📡 Tra cứu & Gửi Email":
     st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
     
     with st.container():
         st.subheader("🔍 Kết nối API: Tra cứu vận đơn")
-        scanned_data = st.text_input("Nhập mã Booking cần kiểm tra:", placeholder="BKG-123")
+        
+        # Gợi ý cho người dùng các mã có thể tra cứu được
+        st.markdown("""
+        *Các mã hệ thống đang quản lý:* `BKG-123` (Evergreen), `MSK-999` (Maersk), `CMA-555` (CMA CGM), `MSC-777` (MSC Lines), `VNM-888` (Vinamilk nội địa)
+        """)
+        
+        scanned_data = st.text_input("Nhập mã Booking cần kiểm tra:", placeholder="BKG-123").strip()
         
         if st.button("Kích hoạt Tra cứu Hệ thống"):
             if scanned_data:
                 with st.spinner('Đang kết nối API và đồng bộ hóa đám mây...'):
                     time.sleep(1.2) 
+                    
+                    # ✨ THAY ĐỔI LỚN: MỞ RỘNG KHO DỮ LIỆU DATABASE ẢO TẠI ĐÂY
                     logistics_data = {
-                        "BKG-123": {"Mã BKG": "BKG-123", "Trạng thái": "On Board", "Tàu vận chuyển": "EVER GIVEN", "Cảng hạ": "Cát Lái"},
-                        "BKG-456": {"Mã BKG": "BKG-456", "Trạng thái": "Pending", "Tàu vận chuyển": "MAERSK ESSEN", "Cảng hạ": "Hải Phòng"}
+                        "BKG-123": {
+                            "Mã Vận Đơn": "BKG-123", 
+                            "Hãng Tàu": "EVERGREEN LINES", 
+                            "Tàu vận chuyển": "EVER GIVEN / 0244E", 
+                            "Trạng thái": "On Board (Đã lên tàu)", 
+                            "Cảng xếp hàng (POL)": "Cát Lái (VNSGN)",
+                            "Cảng dỡ hàng (POD)": "Rotterdam (NLRTM)"
+                        },
+                        "MSK-999": {
+                            "Mã Vận Đơn": "MSK-999", 
+                            "Hãng Tàu": "MAERSK LINE", 
+                            "Tàu vận chuyển": "MAERSK ESSEN / 261W", 
+                            "Trạng thái": "Customs Hold (Đang giữ kiểm hóa hải quan)", 
+                            "Cảng xếp hàng (POL)": "Cái Mép (VNCMPT)",
+                            "Cảng dỡ hàng (POD)": "Los Angeles (USLAX)"
+                        },
+                        "CMA-555": {
+                            "Mã Vận Đơn": "CMA-555", 
+                            "Hãng Tàu": "CMA CGM", 
+                            "Tàu vận chuyển": "CMA CGM LOGISTICS / 09B", 
+                            "Trạng thái": "Pending (Chờ duyệt hạ bãi)", 
+                            "Cảng xếp hàng (POL)": "Hải Phòng (VNHPH)",
+                            "Cảng dỡ hàng (POD)": "Singapore (SGSIN)"
+                        },
+                        "MSC-777": {
+                            "Mã Vận Đơn": "MSC-777", 
+                            "Hãng Tàu": "MSC SHIPPING CO", 
+                            "Tàu vận chuyển": "MSC OSCAR / 115S", 
+                            "Trạng thái": "Leave Behind (Bị rớt tàu do quá hạn Cut-off)", 
+                            "Cảng xếp hàng (POL)": "Cát Lái (VNSGN)",
+                            "Cảng dỡ hàng (POD)": "Hamburg (DEHAM)"
+                        },
+                        "VNM-888": {
+                            "Mã Vận Đơn": "VNM-888", 
+                            "Hãng Tàu": "SÀN VẬN TẢI NỘI ĐỊA ELOGS", 
+                            "Tàu vận chuyển": "Xe Tải Tuyến Bắc Nam / 29C-11234", 
+                            "Trạng thái": "In Transit (Xe đang di chuyển qua địa phận Đà Nẵng)", 
+                            "Cảng xếp hàng (POL)": "Kho Vinamilk Bình Dương",
+                            "Cảng dỡ hàng (POD)": "Kho Tổng Vinamilk Hà Nội"
+                        }
                     }
+                    
+                    # Kiểm tra xem mã người dùng nhập có trong kho không
                     if scanned_data in logistics_data:
-                        st.success("🎉 Truy xuất thành công!")
+                        st.success("🎉 Kết nối API thành công! Dữ liệu gốc trả về:")
                         st.json(logistics_data[scanned_data])
                     else:
-                        st.error("❌ Không tìm thấy dữ liệu vận đơn này trên hệ thống!")
+                        st.error(f"❌ Lỗi [404]: Không tìm thấy dữ liệu cho mã '{scanned_data}' trên hệ thống!")
             else:
                 st.warning("⚠️ Vui lòng nhập mã Booking trước khi kiểm tra!")
                 
@@ -223,11 +271,9 @@ elif menu == "📡 Tra cứu & Gửi Email":
             if not receiver_email:
                 st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
             else:
-                with st.spinner('Đang đóng gói chứng từ chuyên nghiệp và gửi SMTP...'):
+                with st.spinner('Đang đóng gói chứng từ và gửi SMTP...'):
                     try:
                         file_name = f"Booking_Note_{booking_no}.html"
-                        
-                        # ✨ THAY ĐỔI LỚN: THIẾT KẾ GIAO DIỆN CHỨNG TỪ FORM CHUẨN DOANH NGHIỆP TẠI ĐÂY
                         file_content = f"""
                         <html>
                         <head>
@@ -303,7 +349,7 @@ elif menu == "📡 Tra cứu & Gửi Email":
                         msg = MIMEMultipart()
                         msg['From'], msg['To'], msg['Subject'] = SENDER_EMAIL, receiver_email, f"[URGENT] Lịch Cut-off lô hàng {booking_no}"
                         if cc_email: msg['Cc'] = cc_email
-                        msg.attach(MIMEText("Thân gửi,\n\nHệ thống ELOGS gửi đến bạn file chứng từ Thông báo lịch trình và hạn chót (Cut-off Notice) chính thức đính kèm bên dưới.\nVui lòng kiểm tra và hoàn tất thủ tục đúng hạn.\n\nTrân trọng!", 'plain', 'utf-8'))
+                        msg.attach(MIMEText("Kính gửi quý đối tác,\n\nHệ thống ELOGS gửi đến bạn file chứng từ Thông báo lịch trình và hạn chót (Cut-off Notice) chính thức đính kèm bên dưới.\nVui lòng kiểm tra và hoàn tất thủ tục đúng hạn.\n\nTrân trọng!", 'plain', 'utf-8'))
 
                         with open(file_name, "rb") as attachment:
                             part = MIMEBase("application", "octet-stream")
