@@ -17,14 +17,11 @@ st.set_page_config(page_title="ELOGS | Workspace", page_icon="⚓", layout="wide
 
 st.markdown("""
 <style>
-    /* Đổi màu nền tổng thể thành xám nhạt sang trọng */
     .stApp { background-color: #f4f7f6; }
     
-    /* MÀU SẮC CHO THANH SIDEBAR */
     [data-testid="stSidebar"] { background-color: #0A2647; }
     [data-testid="stSidebar"] * { color: #ffffff !important; }
     
-    /* BIẾN MENU SIDEBAR THÀNH CÁC KHỐI BO TRÒN HIỆN ĐẠI */
     [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] { gap: 12px; }
     [data-testid="stSidebar"] .stRadio label {
         background-color: rgba(255, 255, 255, 0.06); 
@@ -37,17 +34,14 @@ st.markdown("""
     [data-testid="stSidebar"] .stRadio div[data-baseweb="radio"] > div:first-child { display: none; }
     [data-testid="stSidebar"] .stRadio div[data-baseweb="radio"] { width: 100%; }
     
-    /* Bo tròn các thẻ thông số Thống kê (Metrics Cards) */
     div[data-testid="metric-container"] {
         background-color: #ffffff; border: 1px solid #e0e4e8; padding: 22px;
         border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); transition: transform 0.2s ease-in-out, box-shadow 0.2s;
     }
     div[data-testid="metric-container"]:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
     
-    /* Làm đẹp và bo tròn Bảng dữ liệu */
     .stDataFrame { border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
     
-    /* Bo tròn Nút bấm (Buttons) */
     div.stButton > button { 
         background-color: #185ADB !important; color: white !important; border-radius: 20px !important; 
         font-weight: 600 !important; border: none !important; padding: 10px 24px !important; transition: all 0.3s ease;
@@ -88,7 +82,7 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
     "⚙️ Cài đặt hệ thống"
 ])
 st.sidebar.markdown("---")
-st.sidebar.info("💡 **Hệ thống đã sẵn sàng:** Giao diện tra cứu API đã được xử lý hoàn hảo.")
+st.sidebar.info("💡 **Hệ thống đã sẵn sàng:** Giao diện tra cứu API đã được xử lý chống lỗi hoàn hảo.")
 
 # ==========================================
 # MÀN HÌNH 1: DASHBOARD
@@ -148,7 +142,7 @@ if menu == "📊 Tổng quan (Dashboard)":
         st.pyplot(fig)
 
 # ==========================================
-# MÀN HÌNH 2: API & GỬI EMAIL (FIXED HTML RENDERING)
+# MÀN HÌNH 2: API & GỬI EMAIL (FIX LỖI HTML TRIỆT ĐỂ)
 # ==========================================
 elif menu == "📡 Tra cứu & Gửi Email":
     st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
@@ -156,7 +150,6 @@ elif menu == "📡 Tra cứu & Gửi Email":
     with st.container():
         st.subheader("🔍 Kết nối API: Tra cứu vận đơn")
         
-        # ĐÃ ẨN DÒNG CHỮ "Các mã hệ thống đang quản lý..."
         scanned_data = st.text_input("Nhập mã Booking cần kiểm tra:", placeholder="Ví dụ: MSK-999").strip()
         
         if st.button("Kích hoạt Tra cứu Hệ thống"):
@@ -205,39 +198,10 @@ elif menu == "📡 Tra cứu & Gửi Email":
                         elif "Leave Behind" in status_str: bg_badge, text_badge = "#f8d7da", "#721c24" 
                         elif "In Transit" in status_str: bg_badge, text_badge = "#e0f7fa", "#006064" 
                         
-                        # FIX LỖI HIỂN THỊ HTML: Ép HTML sát lề trái hoàn toàn
-                        st.markdown(f"""
-<div style="background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e3e8ee; margin-top: 15px; margin-bottom: 15px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px;">
-        <div>
-            <span style="font-size: 11px; color: #a0aec0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Mã số quản lý vận đơn</span>
-            <h3 style="margin: 0; color: #0A2647; font-size: 24px; font-weight: 700;">{res["Mã Vận Đơn"]}</h3>
-        </div>
-        <div style="background-color: {bg_badge}; color: {text_badge}; padding: 8px 18px; border-radius: 24px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-            ● {status_str}
-        </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
-        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Hãng Tàu (Carrier)</span>
-            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Hãng Tàu"]}</div>
-        </div>
-        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Phương tiện (Vessel/Voy/Truck)</span>
-            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px; font-family: monospace;">{res["Tàu vận chuyển"]}</div>
-        </div>
-        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Cảng xếp hàng (POL)</span>
-            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Cảng xếp hàng (POL)"]}</div>
-        </div>
-        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Cảng dỡ hàng (POD)</span>
-            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Cảng dỡ hàng (POD)"]}</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+                        # ⚠️ ÉP TOÀN BỘ HTML THÀNH 1 DÒNG DUY NHẤT ĐỂ STREAMLIT KHÔNG THỂ HIỂU NHẦM LÀ CODE BLOCK
+                        html_card = f"<div style='background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e3e8ee; margin-top: 15px; margin-bottom: 15px;'><div style='display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px;'><div><span style='font-size: 11px; color: #a0aec0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;'>Mã số quản lý vận đơn</span><h3 style='margin: 0; color: #0A2647; font-size: 24px; font-weight: 700;'>{res['Mã Vận Đơn']}</h3></div><div style='background-color: {bg_badge}; color: {text_badge}; padding: 8px 18px; border-radius: 24px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;'>● {status_str}</div></div><div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;'><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Hãng Tàu (Carrier)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;'>{res['Hãng Tàu']}</div></div><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Phương tiện (Vessel/Voy/Truck)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px; font-family: monospace;'>{res['Tàu vận chuyển']}</div></div><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Cảng xếp hàng (POL)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;'>{res['Cảng xếp hàng (POL)']}</div></div><div style='background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;'><span style='font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;'>Cảng dỡ hàng (POD)</span><div style='font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;'>{res['Cảng dỡ hàng (POD)']}</div></div></div></div>"
+                        
+                        st.markdown(html_card, unsafe_allow_html=True)
                         
                         with st.expander("🛠️ Nhấn để xem Chuỗi dữ liệu API gốc (JSON Payload)"):
                             st.json(logistics_data[scanned_data])
