@@ -100,7 +100,7 @@ if 'tasks_df' not in st.session_state:
         "📌 Tên công việc": ["Khai E-port lô BKG-123", "Gửi SI hãng tàu Evergreen"],
         "🏷️ Nhãn": ["Hàng Nhập", "Chứng Từ"],
         "⏳ Trạng thái": ["Đang làm", "Chưa làm"],
-        "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
+        "📅 Deadline": [date(2026, 7, 5), date(2026, 7, 5)], 
         "💬 Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
 
@@ -186,7 +186,7 @@ elif menu == "📡 Tra cứu & Gửi Email":
     
     with st.container():
         st.subheader("🔍 Kết nối API: Tra cứu vận đơn")
-        scanned_data = st.text_input("Nhập mã Booking cần kiểm tra (Ví dụ: BKG-123):", placeholder="BKG-123")
+        scanned_data = st.text_input("Nhập mã Booking cần kiểm tra:", placeholder="BKG-123")
         
         if st.button("Kích hoạt Tra cứu Hệ thống"):
             if scanned_data:
