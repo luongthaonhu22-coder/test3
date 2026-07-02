@@ -247,81 +247,34 @@ elif menu == "📡 Tra cứu & Gửi Email":
         uploaded_file = st.file_uploader("Đính kèm tệp chứng từ bổ sung (Hình ảnh, PDF):")
         
         if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
-            if not receiver_email:
-                st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
-            else:
-                with st.spinner('Đang đóng gói chứng từ và gửi SMTP...'):
-                    try:
-                        file_name = f"Booking_Note_{booking_no}.html"
-                        file_content = f"""
-                        <html>
-                        <head>
-                            <style>
-                                body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #2B3A42; margin: 30px; background-color: #ffffff; line-height: 1.6; }}
-                                .header {{ border-bottom: 3px solid #0A2647; padding-bottom: 12px; margin-bottom: 25px; }}
-                                .company-name {{ color: #0A2647; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }}
-                                .company-info {{ font-size: 13px; color: #666666; margin-top: 4px; }}
-                                .doc-title {{ text-align: center; color: #185ADB; font-size: 24px; font-weight: 700; margin: 35px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }}
-                                .doc-subtitle {{ text-align: center; font-size: 14px; color: #555555; font-style: italic; margin-bottom: 35px; }}
-                                table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }}
-                                th, td {{ border: 1px solid #d1d9e6; padding: 14px 18px; font-size: 14px; text-align: left; }}
-                                th {{ background-color: #0A2647; color: #ffffff; font-weight: 600; text-transform: uppercase; width: 35%; letter-spacing: 0.5px; }}
-                                td {{ background-color: #fcfdfe; }}
-                                .highlight {{ color: #d9534f; font-weight: 700; font-size: 16px; background-color: #fff9f9; }}
-                                .notes-section {{ background-color: #f8f9fa; border-left: 4px solid #185ADB; padding: 18px; border-radius: 0 8px 8px 0; font-size: 13px; margin-top: 40px; }}
-                                .notes-title {{ font-weight: 700; color: #0A2647; margin-bottom: 8px; font-size: 14px; }}
-                                .signature {{ margin-top: 50px; text-align: right; font-weight: 700; color: #0A2647; font-size: 14px; padding-right: 20px; }}
-                            </style>
-                        </head>
-                        <body>
-                            <div class="header">
-                                <div class="company-name">⚓ ELOGS LOGISTICS CO., LTD</div>
-                                <div class="company-info">
-                                    <b>Trụ sở:</b> Tòa nhà Landmark, Tầng 18, Quận 1, TP. Hồ Chí Minh, Việt Nam<br>
-                                    <b>Hotline:</b> (+84) 1900 ELOGS | <b>Email:</b> ops@elogs-workspace.com
-                                </div>
-                            </div>
-                            
-                            <div class="doc-title">THÔNG BÁO LỊCH TRÌNH LÔ HÀNG & HẠN CHÓT</div>
-                            <div class="doc-subtitle">(OFFICIAL SHIPMENT & CUT-OFF NOTICE)</div>
-                            
-                            <table>
-                                <tr>
-                                    <th>Mã số Vận đơn (Booking No.)</th>
-                                    <td><b style="font-size: 16px; color: #185ADB;">{booking_no}</b></td>
-                                </tr>
-                                <tr>
-                                    <th>Ký hiệu Container (Container No.)</th>
-                                    <td><span style="font-family: monospace; font-size: 15px; font-weight: 600;">{container_no}</span></td>
-                                </tr>
-                                <tr>
-                                    <th>Hạn chót hạ bãi (Cut-off Time)</th>
-                                    <td class="highlight">⚠️ {cut_off}</td>
-                                </tr>
-                                <tr>
-                                    <th>Trạng thái chứng từ (Status)</th>
-                                    <td><span style="color: #5cb85c; font-weight: bold; background-color: #f2fbf2; padding: 4px 10px; border-radius: 12px; font-size: 12px;">ĐÃ PHÁT HÀNH (ORIGINAL SENT)</span></td>
-                                </tr>
-                                <tr>
-                                    <th>Thời gian xuất bản (Issue Date)</th>
-                                    <td>{datetime.now().strftime('%d/%m/%Y - %H:%M')}</td>
-                                </tr>
-                            </table>
-                            
-                            <div class="notes-section">
-                                <div class="notes-title">⚠️ ĐIỀU KHOẢN VÀ LƯU Ý QUAN TRỌNG (OPERATIONAL TERMS):</div>
-                                1. Quý khách vui lòng hoàn thành toàn bộ thủ tục thông quan hải quan và hạ bãi trước thời gian <b>Cut-off</b> quy định phía trên.<br>
-                                2. Mọi sự chậm trễ dẫn đến việc rớt tàu (Leave behind), ELOGS sẽ không chịu trách nhiệm đối với các chi phí phát sinh lưu kho bãi (DEM/DET).<br>
-                                3. Nếu có bất kỳ thay đổi hoặc sự cố phát sinh, vui lòng liên hệ ngay với bộ phận Điều độ của chúng tôi qua Hotline hoặc Email ở phần đầu văn bản.
-                            </div>
-                            
-                            <div class="signature">
-                                TRÂN TRỌNG CẢM ƠN!<br>
-                                <span style="font-weight: 500; font-style: italic; color: #666666; font-size: 13px;">Bộ phận Chứng từ & Hiện trường ELOGS Operations</span>
-                            </div>
-                        </body>
-                        </html>
-                        """
+    if not receiver_email:
+        st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
+    else:
+        with st.spinner('Đang đóng gói và gửi chứng từ...'):
+            try:
+                # 1. Tạo nội dung HTML (Đã được ép sát lề trái hoàn toàn)
+                html_content = f"""
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ padding: 20px; border: 1px solid #ccc; border-radius: 10px; }}
+        h2 {{ color: #0A2647; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>THÔNG BÁO LỊCH TRÌNH LÔ HÀNG</h2>
+        <p>Kính gửi quý đối tác,</p>
+        <p>Chi tiết lô hàng <b>{booking_no}</b> được cập nhật như sau:</p>
+        <ul>
+            <li>Container: {container_no}</li>
+            <li>Cut-off: <span style="color:red;">{cut_off}</span></li>
+        </ul>
+    </div>
+</body>
+</html>
+"""
                         
                         with open(file_name, "w", encoding="utf-8") as f: f.write(file_content)
 
