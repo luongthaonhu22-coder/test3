@@ -10,9 +10,7 @@ import matplotlib.pyplot as plt
 import requests 
 import time 
 
-# ==========================================
-# CẤU HÌNH TRANG & CSS BO TRÒN (SIDEBAR STYLE)
-# ==========================================
+
 st.set_page_config(page_title="ELOGS | Workspace", page_icon="⚓", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
@@ -56,7 +54,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- KHỞI TẠO KHO DỮ LIỆU & QUẢN LÝ TRẠNG THÁI ---
+
 if 'tasks_df' not in st.session_state:
     st.session_state.tasks_df = pd.DataFrame({
         "🚩 Quan trọng": [True, False],
@@ -66,17 +64,15 @@ if 'tasks_df' not in st.session_state:
         "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
         "💬 Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
-    # Khởi tạo bản nháp và định vị Tab hiện tại
+  
     st.session_state.temp_edited_df = st.session_state.tasks_df
     st.session_state.current_tab = "📊 Tổng quan (Dashboard)"
 
-# --- CẤU HÌNH TÀI KHOẢN EMAIL ---
+
 SENDER_EMAIL = "luongthaonhu22@gmail.com" 
 APP_PASSWORD = "yjny odng vbgd czck"     
 
-# ==========================================
-# THANH ĐIỀU HƯỚNG BÊN TRÁI (SIDEBAR)
-# ==========================================
+
 st.sidebar.markdown("## ⚓ ELOGS Workspace")
 st.sidebar.markdown("---")
 menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
@@ -85,7 +81,7 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
     "⚙️ Cài đặt hệ thống"
 ])
 
-# ✨ THUẬT TOÁN ĐỒNG BỘ: Chỉ cập nhật dữ liệu gốc khi chuyển Tab
+
 if menu != st.session_state.current_tab:
     st.session_state.tasks_df = st.session_state.temp_edited_df
     st.session_state.current_tab = menu
@@ -93,19 +89,17 @@ if menu != st.session_state.current_tab:
 st.sidebar.markdown("---")
 st.sidebar.info("💡 **Giao diện 4.0:** Bảng công việc đã được xử lý chống giật lag, thêm việc mới mượt mà không bị mất dòng.")
 
-# ==========================================
-# MÀN HÌNH 1: DASHBOARD
-# ==========================================
+
 if menu == "📊 Tổng quan (Dashboard)":
     st.title("Hiệu suất Công việc hôm nay")
     st.markdown("Theo dõi và cập nhật tiến độ các lô hàng theo thời gian thực.")
     
-    # 1. TẠO VÙNG CHỨA GIỮ CHỖ CHO THỐNG KÊ (Để in ra ở trên cùng)
+
     metrics_container = st.container()
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 2. HIỂN THỊ BẢNG (Xử lý trước để có dữ liệu mới nhất)
+  
     st.subheader("📋 Danh sách tác vụ đang quản lý")
     edited_df = st.data_editor(
         st.session_state.tasks_df,
@@ -119,10 +113,9 @@ if menu == "📊 Tổng quan (Dashboard)":
             "📅 Deadline": st.column_config.DateColumn("Deadline"),
         }
     )
-    # Lưu vào nháp, tuyệt đối KHÔNG ghi đè trực tiếp lên tasks_df ở đây
+
     st.session_state.temp_edited_df = edited_df
 
-    # 3. ĐIỀN DỮ LIỆU LÊN VÙNG CHỨA PHÍA TRÊN
     with metrics_container:
         total_tasks = len(edited_df)
         done_tasks = len(edited_df[edited_df["⏳ Trạng thái"] == "Hoàn thành"])
@@ -156,9 +149,7 @@ if menu == "📊 Tổng quan (Dashboard)":
         ax.set_ylabel("") 
         st.pyplot(fig)
 
-# ==========================================
-# MÀN HÌNH 2: API & GỬI EMAIL 
-# ==========================================
+
 elif menu == "📡 Tra cứu & Gửi Email":
     st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
     
@@ -346,9 +337,7 @@ elif menu == "📡 Tra cứu & Gửi Email":
                     except Exception as e:
                         st.error(f"❌ Gặp sự cố khi gửi thư qua Gmail: {e}")
 
-# ==========================================
-# MÀN HÌNH 3: CÀI ĐẶT
-# ==========================================
+
 elif menu == "⚙️ Cài đặt hệ thống":
     st.title("⚙️ Cài đặt Hệ thống")
     st.info("Tính năng phân quyền đại lý, kết nối API nhà xe và thiết lập thông số EDI sẽ xuất hiện trong bản cập nhật lớn tiếp theo.")
