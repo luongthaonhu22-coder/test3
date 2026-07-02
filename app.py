@@ -21,70 +21,39 @@ st.markdown("""
     .stApp { background-color: #f4f7f6; }
     
     /* MÀU SẮC CHO THANH SIDEBAR */
-    [data-testid="stSidebar"] { 
-        background-color: #0A2647; 
-    }
-    [data-testid="stSidebar"] * { 
-        color: #ffffff !important; 
-    }
+    [data-testid="stSidebar"] { background-color: #0A2647; }
+    [data-testid="stSidebar"] * { color: #ffffff !important; }
     
     /* BIẾN MENU SIDEBAR THÀNH CÁC KHỐI BO TRÒN HIỆN ĐẠI */
-    [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
-        gap: 12px;
-    }
+    [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] { gap: 12px; }
     [data-testid="stSidebar"] .stRadio label {
         background-color: rgba(255, 255, 255, 0.06); 
-        padding: 12px 20px;
-        border-radius: 16px !important; 
-        border: 1px solid rgba(255,255,255,0.05);
-        transition: all 0.3s ease;
-        cursor: pointer;
+        padding: 12px 20px; border-radius: 16px !important; 
+        border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease; cursor: pointer;
     }
-    /* Hiệu ứng khi di chuột vào Menu */
     [data-testid="stSidebar"] .stRadio label:hover {
-        background-color: rgba(255, 255, 255, 0.15); 
-        transform: translateX(6px); 
-        border-color: rgba(255,255,255,0.3);
+        background-color: rgba(255, 255, 255, 0.15); transform: translateX(6px); border-color: rgba(255,255,255,0.3);
     }
-    /* Ẩn cái dấu chấm tròn mặc định của Streamlit */
-    [data-testid="stSidebar"] .stRadio div[data-baseweb="radio"] > div:first-child {
-        display: none; 
-    }
-    [data-testid="stSidebar"] .stRadio div[data-baseweb="radio"] {
-        width: 100%;
-    }
+    [data-testid="stSidebar"] .stRadio div[data-baseweb="radio"] > div:first-child { display: none; }
+    [data-testid="stSidebar"] .stRadio div[data-baseweb="radio"] { width: 100%; }
     
     /* Bo tròn các thẻ thông số Thống kê (Metrics Cards) */
     div[data-testid="metric-container"] {
-        background-color: #ffffff;
-        border: 1px solid #e0e4e8;
-        padding: 22px;
-        border-radius: 16px; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+        background-color: #ffffff; border: 1px solid #e0e4e8; padding: 22px;
+        border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); transition: transform 0.2s ease-in-out, box-shadow 0.2s;
     }
-    div[data-testid="metric-container"]:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
+    div[data-testid="metric-container"]:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
     
     /* Làm đẹp và bo tròn Bảng dữ liệu */
     .stDataFrame { border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
     
     /* Bo tròn Nút bấm (Buttons) */
     div.stButton > button { 
-        background-color: #185ADB !important; 
-        color: white !important; 
-        border-radius: 20px !important; 
-        font-weight: 600 !important; 
-        border: none !important; 
-        padding: 10px 24px !important;
-        transition: all 0.3s ease;
+        background-color: #185ADB !important; color: white !important; border-radius: 20px !important; 
+        font-weight: 600 !important; border: none !important; padding: 10px 24px !important; transition: all 0.3s ease;
     }
     div.stButton > button:hover { 
-        background-color: #0A2647 !important; 
-        box-shadow: 0 4px 12px rgba(24, 90, 219, 0.3) !important;
-        transform: translateY(-2px);
+        background-color: #0A2647 !important; box-shadow: 0 4px 12px rgba(24, 90, 219, 0.3) !important; transform: translateY(-2px);
     }
     
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -119,7 +88,7 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
     "⚙️ Cài đặt hệ thống"
 ])
 st.sidebar.markdown("---")
-st.sidebar.info("💡 **Giao diện 3.0:** Đã nâng cấp màn hình kết quả tra cứu API từ dạng JSON thô sang dạng thẻ điều khiển (Visual Tracking Cards) cao cấp.")
+st.sidebar.info("💡 **Hệ thống đã sẵn sàng:** Giao diện tra cứu API đã được xử lý hoàn hảo.")
 
 # ==========================================
 # MÀN HÌNH 1: DASHBOARD
@@ -179,18 +148,16 @@ if menu == "📊 Tổng quan (Dashboard)":
         st.pyplot(fig)
 
 # ==========================================
-# MÀN HÌNH 2: API & GỬI EMAIL (SIÊU CẢI TIẾN HIỂN THỊ API)
+# MÀN HÌNH 2: API & GỬI EMAIL (FIXED HTML RENDERING)
 # ==========================================
 elif menu == "📡 Tra cứu & Gửi Email":
     st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
     
     with st.container():
         st.subheader("🔍 Kết nối API: Tra cứu vận đơn")
-        st.markdown("""
-        *Các mã hệ thống đang quản lý:* `BKG-123` (Evergreen), `MSK-999` (Maersk), `CMA-555` (CMA CGM), `MSC-777` (MSC Lines), `VNM-888` (Vinamilk nội địa)
-        """)
         
-        scanned_data = st.text_input("Nhập mã Booking cần kiểm tra:", placeholder="BKG-123").strip()
+        # ĐÃ ẨN DÒNG CHỮ "Các mã hệ thống đang quản lý..."
+        scanned_data = st.text_input("Nhập mã Booking cần kiểm tra:", placeholder="Ví dụ: MSK-999").strip()
         
         if st.button("Kích hoạt Tra cứu Hệ thống"):
             if scanned_data:
@@ -229,51 +196,49 @@ elif menu == "📡 Tra cứu & Gửi Email":
                         res = logistics_data[scanned_data]
                         st.success("🎉 Kết nối hệ thống API thành công!")
                         
-                        # Tự động tính toán bộ lọc màu sắc cho Badge Trạng thái
                         status_str = res["Trạng thái"]
-                        bg_badge, text_badge = "#e2f0d9", "#385723" # Mặc định xanh lá
+                        bg_badge, text_badge = "#e2f0d9", "#385723" 
                         
                         if "On Board" in status_str: bg_badge, text_badge = "#d4edda", "#155724"
-                        elif "Hold" in status_str: bg_badge, text_badge = "#fff3cd", "#856404" # Vàng nhạt
-                        elif "Pending" in status_str: bg_badge, text_badge = "#cce5ff", "#004085" # Xanh dương nhạt
-                        elif "Leave Behind" in status_str: bg_badge, text_badge = "#f8d7da", "#721c24" # Đỏ nhạt
-                        elif "In Transit" in status_str: bg_badge, text_badge = "#e0f7fa", "#006064" # Xanh ngọc
+                        elif "Hold" in status_str: bg_badge, text_badge = "#fff3cd", "#856404" 
+                        elif "Pending" in status_str: bg_badge, text_badge = "#cce5ff", "#004085" 
+                        elif "Leave Behind" in status_str: bg_badge, text_badge = "#f8d7da", "#721c24" 
+                        elif "In Transit" in status_str: bg_badge, text_badge = "#e0f7fa", "#006064" 
                         
-                        # ✨ THAY ĐỔI ĐỘT PHÁ: THIẾT KẾ CARD HIỂN THỊ THAY THẾ CHO ST.JSON() TRƠN TRỌI
+                        # FIX LỖI HIỂN THỊ HTML: Ép HTML sát lề trái hoàn toàn
                         st.markdown(f"""
-                        <div style="background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e3e8ee; margin-top: 15px; margin-bottom: 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px;">
-                                <div>
-                                    <span style="font-size: 11px; color: #a0aec0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Mã số quản lý vận đơn</span>
-                                    <h3 style="margin: 0; color: #0A2647; font-size: 24px; font-weight: 700;">{res["Mã Vận Đơn"]}</h3>
-                                </div>
-                                <div style="background-color: {bg_badge}; color: {text_badge}; padding: 8px 18px; border-radius: 24px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    ● {status_str}
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
-                                <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-                                    <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Hãng Tàu (Carrier)</span>
-                                    <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Hãng Tàu"]}</div>
-                                </div>
-                                <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-                                    <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Phương tiện (Vessel/Voy/Truck)</span>
-                                    <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px; font-family: monospace;">{res["Tàu vận chuyển"]}</div>
-                                </div>
-                                <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-                                    <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Cảng xếp hàng (POL)</span>
-                                    <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Cảng xếp hàng (POL)"]}</div>
-                                </div>
-                                <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
-                                    <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Cảng dỡ hàng (POD)</span>
-                                    <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Cảng dỡ hàng (POD)"]}</div>
-                                </div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+<div style="background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e3e8ee; margin-top: 15px; margin-bottom: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px;">
+        <div>
+            <span style="font-size: 11px; color: #a0aec0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Mã số quản lý vận đơn</span>
+            <h3 style="margin: 0; color: #0A2647; font-size: 24px; font-weight: 700;">{res["Mã Vận Đơn"]}</h3>
+        </div>
+        <div style="background-color: {bg_badge}; color: {text_badge}; padding: 8px 18px; border-radius: 24px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+            ● {status_str}
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
+            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Hãng Tàu (Carrier)</span>
+            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Hãng Tàu"]}</div>
+        </div>
+        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
+            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Phương tiện (Vessel/Voy/Truck)</span>
+            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px; font-family: monospace;">{res["Tàu vận chuyển"]}</div>
+        </div>
+        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
+            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Cảng xếp hàng (POL)</span>
+            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Cảng xếp hàng (POL)"]}</div>
+        </div>
+        <div style="background-color: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #edf2f7;">
+            <span style="font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase;">Cảng dỡ hàng (POD)</span>
+            <div style="font-size: 15px; color: #1a202c; font-weight: 700; margin-top: 4px;">{res["Cảng dỡ hàng (POD)"]}</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
                         
-                        # Vẫn giữ lại bảng JSON thu nhỏ phía dưới cho đúng tính chất kiểm tra API của nhà phát triển
                         with st.expander("🛠️ Nhấn để xem Chuỗi dữ liệu API gốc (JSON Payload)"):
                             st.json(logistics_data[scanned_data])
                     else:
