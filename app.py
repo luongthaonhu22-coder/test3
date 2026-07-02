@@ -246,7 +246,7 @@ elif menu == "📡 Tra cứu & Gửi Email":
         
         uploaded_file = st.file_uploader("Đính kèm tệp chứng từ bổ sung (Hình ảnh, PDF):")
         
-        if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
+    if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
     if not receiver_email:
         st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
     else:
