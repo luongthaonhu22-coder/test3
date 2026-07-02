@@ -108,13 +108,6 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
 
 
 
-# ✨ THUẬT TOÁN ĐỒNG BỘ: Chỉ cập nhật dữ liệu gốc khi chuyển Tab
-
-if menu != st.session_state.current_tab:
-
-    st.session_state.tasks_df = st.session_state.temp_edited_df
-
-    st.session_state.current_tab = menu
 
 
 
