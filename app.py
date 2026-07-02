@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 import requests 
 import time 
 
-
+# ==========================================
+# CẤU HÌNH TRANG & CSS BO TRÒN (SIDEBAR STYLE)
+# ==========================================
 st.set_page_config(page_title="ELOGS | Workspace", page_icon="⚓", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
@@ -54,7 +56,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
+# --- KHỞI TẠO KHO DỮ LIỆU & QUẢN LÝ TRẠNG THÁI ---
 if 'tasks_df' not in st.session_state:
     st.session_state.tasks_df = pd.DataFrame({
         "🚩 Quan trọng": [True, False],
@@ -64,14 +66,17 @@ if 'tasks_df' not in st.session_state:
         "📅 Deadline": [date(2026, 6, 30), date(2026, 6, 30)], 
         "💬 Ghi chú": ["Sếp dặn check kỹ số container", ""]
     })
-  
+    # Khởi tạo bản nháp và định vị Tab hiện tại
     st.session_state.temp_edited_df = st.session_state.tasks_df
     st.session_state.current_tab = "📊 Tổng quan (Dashboard)"
 
-
+# --- CẤU HÌNH TÀI KHOẢN EMAIL ---
 SENDER_EMAIL = "luongthaonhu22@gmail.com" 
 APP_PASSWORD = "yjny odng vbgd czck"     
 
+# ==========================================
+# THANH ĐIỀU HƯỚNG BÊN TRÁI (SIDEBAR)
+# ==========================================
 st.sidebar.markdown("## ⚓ ELOGS Workspace")
 st.sidebar.markdown("---")
 menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
@@ -81,7 +86,7 @@ menu = st.sidebar.radio("CHỨC NĂNG CHÍNH:", [
     "⚙️ Cài đặt hệ thống"
 ])
 
-
+# ✨ THUẬT TOÁN ĐỒNG BỘ: Chỉ cập nhật dữ liệu gốc khi chuyển Tab
 if menu != st.session_state.current_tab:
     st.session_state.tasks_df = st.session_state.temp_edited_df
     st.session_state.current_tab = menu
@@ -104,17 +109,19 @@ if menu == "🏠 Trang chủ":
     st.image("https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1000&auto=format&fit=crop", caption="Tối ưu hóa chuỗi cung ứng của bạn")
 
 
-
+# ==========================================
+# MÀN HÌNH 1: DASHBOARD
+# ==========================================
 if menu == "📊 Tổng quan (Dashboard)":
     st.title("Hiệu suất Công việc hôm nay")
     st.markdown("Theo dõi và cập nhật tiến độ các lô hàng theo thời gian thực.")
     
- 
+    # 1. TẠO VÙNG CHỨA GIỮ CHỖ CHO THỐNG KÊ (Để in ra ở trên cùng)
     metrics_container = st.container()
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-
+    # 2. HIỂN THỊ BẢNG (Xử lý trước để có dữ liệu mới nhất)
     st.subheader("📋 Danh sách tác vụ đang quản lý")
     edited_df = st.data_editor(
         st.session_state.tasks_df,
@@ -128,10 +135,10 @@ if menu == "📊 Tổng quan (Dashboard)":
             "📅 Deadline": st.column_config.DateColumn("Deadline"),
         }
     )
-
+    # Lưu vào nháp, tuyệt đối KHÔNG ghi đè trực tiếp lên tasks_df ở đây
     st.session_state.temp_edited_df = edited_df
 
-
+    # 3. ĐIỀN DỮ LIỆU LÊN VÙNG CHỨA PHÍA TRÊN
     with metrics_container:
         total_tasks = len(edited_df)
         done_tasks = len(edited_df[edited_df["⏳ Trạng thái"] == "Hoàn thành"])
@@ -165,7 +172,9 @@ if menu == "📊 Tổng quan (Dashboard)":
         ax.set_ylabel("") 
         st.pyplot(fig)
 
-
+# ==========================================
+# MÀN HÌNH 2: API & GỬI EMAIL 
+# ==========================================
 elif menu == "📡 Tra cứu & Gửi Email":
     st.title("Trung tâm Xử lý Dữ liệu Ngoại vi")
     
@@ -245,38 +254,83 @@ elif menu == "📡 Tra cứu & Gửi Email":
         cut_off = col_c.text_input("Thời gian Cut-off:", "17:00 - 25/06/2026")
         
         uploaded_file = st.file_uploader("Đính kèm tệp chứng từ bổ sung (Hình ảnh, PDF):")
-                   if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
-        if not receiver_email:
-            st.error("⚠️ Điền Email người nhận!")
-        else:
-            st.success("Đang gửi mail...")
-        st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
-    else:
-        with st.spinner('Đang đóng gói và gửi chứng từ...'):
-            try:
-                # 1. Tạo nội dung HTML (Đã được ép sát lề trái hoàn toàn)
-                html_content = f"""
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ padding: 20px; border: 1px solid #ccc; border-radius: 10px; }}
-        h2 {{ color: #0A2647; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>THÔNG BÁO LỊCH TRÌNH LÔ HÀNG</h2>
-        <p>Kính gửi quý đối tác,</p>
-        <p>Chi tiết lô hàng <b>{booking_no}</b> được cập nhật như sau:</p>
-        <ul>
-            <li>Container: {container_no}</li>
-            <li>Cut-off: <span style="color:red;">{cut_off}</span></li>
-        </ul>
-    </div>
-</body>
-</html>
-"""
+        
+        if st.button("🚀 PHÁT HÀNH EMAIL THÔNG BÁO"):
+            if not receiver_email:
+                st.error("⚠️ Bạn chưa điền địa chỉ Email người nhận!")
+            else:
+                with st.spinner('Đang đóng gói chứng từ và gửi SMTP...'):
+                    try:
+                        file_name = f"Booking_Note_{booking_no}.html"
+                        file_content = f"""
+                        <html>
+                        <head>
+                            <style>
+                                body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #2B3A42; margin: 30px; background-color: #ffffff; line-height: 1.6; }}
+                                .header {{ border-bottom: 3px solid #0A2647; padding-bottom: 12px; margin-bottom: 25px; }}
+                                .company-name {{ color: #0A2647; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }}
+                                .company-info {{ font-size: 13px; color: #666666; margin-top: 4px; }}
+                                .doc-title {{ text-align: center; color: #185ADB; font-size: 24px; font-weight: 700; margin: 35px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }}
+                                .doc-subtitle {{ text-align: center; font-size: 14px; color: #555555; font-style: italic; margin-bottom: 35px; }}
+                                table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }}
+                                th, td {{ border: 1px solid #d1d9e6; padding: 14px 18px; font-size: 14px; text-align: left; }}
+                                th {{ background-color: #0A2647; color: #ffffff; font-weight: 600; text-transform: uppercase; width: 35%; letter-spacing: 0.5px; }}
+                                td {{ background-color: #fcfdfe; }}
+                                .highlight {{ color: #d9534f; font-weight: 700; font-size: 16px; background-color: #fff9f9; }}
+                                .notes-section {{ background-color: #f8f9fa; border-left: 4px solid #185ADB; padding: 18px; border-radius: 0 8px 8px 0; font-size: 13px; margin-top: 40px; }}
+                                .notes-title {{ font-weight: 700; color: #0A2647; margin-bottom: 8px; font-size: 14px; }}
+                                .signature {{ margin-top: 50px; text-align: right; font-weight: 700; color: #0A2647; font-size: 14px; padding-right: 20px; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <div class="company-name">⚓ ELOGS LOGISTICS CO., LTD</div>
+                                <div class="company-info">
+                                    <b>Trụ sở:</b> Tòa nhà Landmark, Tầng 18, Quận 1, TP. Hồ Chí Minh, Việt Nam<br>
+                                    <b>Hotline:</b> (+84) 1900 ELOGS | <b>Email:</b> ops@elogs-workspace.com
+                                </div>
+                            </div>
+                            
+                            <div class="doc-title">THÔNG BÁO LỊCH TRÌNH LÔ HÀNG & HẠN CHÓT</div>
+                            <div class="doc-subtitle">(OFFICIAL SHIPMENT & CUT-OFF NOTICE)</div>
+                            
+                            <table>
+                                <tr>
+                                    <th>Mã số Vận đơn (Booking No.)</th>
+                                    <td><b style="font-size: 16px; color: #185ADB;">{booking_no}</b></td>
+                                </tr>
+                                <tr>
+                                    <th>Ký hiệu Container (Container No.)</th>
+                                    <td><span style="font-family: monospace; font-size: 15px; font-weight: 600;">{container_no}</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Hạn chót hạ bãi (Cut-off Time)</th>
+                                    <td class="highlight">⚠️ {cut_off}</td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng thái chứng từ (Status)</th>
+                                    <td><span style="color: #5cb85c; font-weight: bold; background-color: #f2fbf2; padding: 4px 10px; border-radius: 12px; font-size: 12px;">ĐÃ PHÁT HÀNH (ORIGINAL SENT)</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Thời gian xuất bản (Issue Date)</th>
+                                    <td>{datetime.now().strftime('%d/%m/%Y - %H:%M')}</td>
+                                </tr>
+                            </table>
+                            
+                            <div class="notes-section">
+                                <div class="notes-title">⚠️ ĐIỀU KHOẢN VÀ LƯU Ý QUAN TRỌNG (OPERATIONAL TERMS):</div>
+                                1. Quý khách vui lòng hoàn thành toàn bộ thủ tục thông quan hải quan và hạ bãi trước thời gian <b>Cut-off</b> quy định phía trên.<br>
+                                2. Mọi sự chậm trễ dẫn đến việc rớt tàu (Leave behind), ELOGS sẽ không chịu trách nhiệm đối với các chi phí phát sinh lưu kho bãi (DEM/DET).<br>
+                                3. Nếu có bất kỳ thay đổi hoặc sự cố phát sinh, vui lòng liên hệ ngay với bộ phận Điều độ của chúng tôi qua Hotline hoặc Email ở phần đầu văn bản.
+                            </div>
+                            
+                            <div class="signature">
+                                TRÂN TRỌNG CẢM ƠN!<br>
+                                <span style="font-weight: 500; font-style: italic; color: #666666; font-size: 13px;">Bộ phận Chứng từ & Hiện trường ELOGS Operations</span>
+                            </div>
+                        </body>
+                        </html>
+                        """
                         
                         with open(file_name, "w", encoding="utf-8") as f: f.write(file_content)
 
@@ -308,7 +362,9 @@ elif menu == "📡 Tra cứu & Gửi Email":
                     except Exception as e:
                         st.error(f"❌ Gặp sự cố khi gửi thư qua Gmail: {e}")
 
-
+# ==========================================
+# MÀN HÌNH 3: CÀI ĐẶT
+# ==========================================
 elif menu == "⚙️ Cài đặt hệ thống":
     st.title("⚙️ Cài đặt Hệ thống")
     st.info("Tính năng phân quyền đại lý, kết nối API nhà xe và thiết lập thông số EDI sẽ xuất hiện trong bản cập nhật lớn tiếp theo.")
